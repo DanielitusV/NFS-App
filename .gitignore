@@ -28,3 +28,11 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+## Gradle
+/.gradle
+/build
+/out
+/gradle/
+gradlew
+gradlew.bat
