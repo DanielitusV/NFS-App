@@ -8,8 +8,8 @@ import javax.swing.SwingUtilities;
 public class Main {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            MainWindow mainWindow = new MainFrame();
-            NfsController controller = new NFSController(mainWindow);
+            MainWindow mainWindow = new MainWindow();
+            NfsController controller = new NfsController(mainWindow);
             controller.initialize();
             mainWindow.setVisible(true);
         });
