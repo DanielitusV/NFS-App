@@ -8,6 +8,7 @@ import aso.nfsapp.model.HostRule;
 
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -39,7 +40,7 @@ public class NfsController {
         ui.getHostRulesPanel().getDeleteHostButton().addActionListener(e -> deleteRule());
 
         /* Guardar y aplicar */
-        ui.getSaveApplyButton().addActionListener(e -> saveTempAndShowNextSteps());
+        ui.getSaveApplyButton().addActionListener(e -> saveAndApplyChanges());
     }
 
     private ExportEntry currentEntry() {
@@ -135,7 +136,7 @@ public class NfsController {
         }
     }
 
-    private void saveTempAndShowNextSteps() {
+    private void saveAndApplyChanges() {
         try {
             List<String> lines = new ArrayList<>();
             for (ExportEntry e: directories) {
@@ -145,16 +146,39 @@ public class NfsController {
 
             String msg = "Guardado en: " + fileManager.exportsPathString();
             if (SystemPaths.isLinux()) {
-                msg += "\nAplica con:\n"
-                        + "pkexec cp " + fileManager.exportsPathString() + "\n"
-                        + "pkexec systemctl enable --now nfs-server\n"
-                        + "pkexec exportfs -rav";
+                applyChangesWithPkexec();
             } else {
                 msg += "\n(Windows: solo prueba. En Linux copiará a /etc/exports).";
             }
             JOptionPane.showMessageDialog(ui, msg);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(ui, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void applyChangesWithPkexec() {
+        try {
+            String copyCommand = "pkexec cp " + fileManager.exportsPathString() + " /etc/exports";
+            executeWithRoot(copyCommand);
+
+            String restartCommand = "pkexec systemctl restart nfs-server";
+            executeWithRoot(restartCommand);
+
+            String exportfsCommand = "pkexec exportfs -rav";
+            executeWithRoot(exportfsCommand);
+
+            JOptionPane.showMessageDialog(ui, "Cambios aplicados con éxito");
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(ui, "Error al aplicar cambios: " + e.getMessage());
+        }
+    }
+
+    private void executeWithRoot(String command) throws IOException {
+        Process process = Runtime.getRuntime().exec(command);
+        try {
+            process.waitFor();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 }
