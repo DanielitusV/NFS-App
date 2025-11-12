@@ -1,12 +1,15 @@
 plugins {
     application
     id("com.github.johnrengelman.shadow") version "8.1.1"
+    kotlin("jvm")
 }
 repositories { mavenCentral() }
 java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
 application { mainClass.set("aso.nfsapp.app.Main") }
 tasks.withType<JavaCompile> { options.release.set(17) }
-dependencies { testImplementation("org.junit.jupiter:junit-jupiter:5.10.3") }
+dependencies { testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
+    implementation(kotlin("stdlib-jdk8"))
+}
 tasks.test { useJUnitPlatform() }
 tasks.shadowJar {
     archiveBaseName.set("nfs-app")

@@ -1,43 +1,64 @@
 package aso.nfsapp.view;
 
+import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
+import javax.swing.JToolBar;
+import javax.swing.JSplitPane;
 
 import java.awt.BorderLayout;
 
 public class MainWindow extends JFrame {
-    private final DirectoryListPanel directoryList = new DirectoryListPanel();
-    private final JButton addDirectoryButton = new JButton("Agregar carpeta");
-    private final JButton removeDirectoryButton = new JButton("Eliminar carpeta");
-    private final JButton saveChangesButton = new JButton("Guardar cambios");
+    private final DirectoryListPanel directoryListPanel = new DirectoryListPanel();
+    private final HostRulesTablePanel hostRulesPanel = new HostRulesTablePanel();
+
+    private final JButton addDirectoryButton = new JButton("Add Directory");
+    private final JButton editDirectoryButton = new JButton("Edit");
+    private final JButton deleteDirectoryButton = new JButton("Delete");
+    private final JButton saveApplyButton = new JButton("Save & Apply");
 
     public MainWindow() {
-        super ("NFS App - Configurar /etc/exports");
+        super ("NFS App - NFS Server");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(750, 520);
+        setSize(900, 600);
         setLocationRelativeTo(null);
 
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.add(addDirectoryButton);
-        buttonPanel.add(removeDirectoryButton);
-        buttonPanel.add(saveChangesButton);
+        /* Barra superior de configuración */
+        JToolBar topBar = new JToolBar();
+        topBar.setFloatable(false);
+        topBar.add(addDirectoryButton);
+        topBar.add(editDirectoryButton);
+        topBar.add(deleteDirectoryButton);
+        topBar.add(Box.createHorizontalGlue());
+        topBar.add(saveApplyButton);
 
-        add(buttonPanel, BorderLayout.NORTH);
-        add(directoryList, BorderLayout.CENTER);
+        /* Split vertical */
+        JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+                directoryListPanel, hostRulesPanel);
+        split.setResizeWeight(0.5);
+
+        setLayout(new BorderLayout());
+        add(topBar, BorderLayout.NORTH);
+        add(split, BorderLayout.CENTER);
     }
 
     public DirectoryListPanel getDirectoryListPanel() {
-        return this.directoryList;
+        return this.directoryListPanel;
+    }
+    public HostRulesTablePanel getHostRulesPanel() {
+        return hostRulesPanel;
     }
     public JButton getAddDirectoryButton() {
         return addDirectoryButton;
     }
-    public JButton getRemoveDirectoryButton() {
-        return removeDirectoryButton;
+    public JButton getEditDirectoryButton() {
+        return editDirectoryButton;
     }
-    public JButton getSaveChangesButton() {
-        return saveChangesButton;
+    public JButton getDeleteDirectoryButton() {
+        return deleteDirectoryButton;
+    }
+    public JButton getSaveApplyButton() {
+        return saveApplyButton;
     }
 
 }

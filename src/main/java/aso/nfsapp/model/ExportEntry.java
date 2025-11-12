@@ -1,14 +1,15 @@
 package aso.nfsapp.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ExportEntry {
     private String directoryPath;
-    private String clientHost;
-    private String exportOptions;
+    private List<HostRule> hostRules;
 
-    public ExportEntry(String directoryPath, String clientHost, String exportOptions) {
+    public ExportEntry(String directoryPath) {
         this.directoryPath = directoryPath;
-        this.clientHost = clientHost;
-        this.exportOptions = exportOptions;
+        this.hostRules = new ArrayList<>();
     }
 
     public String getDirectoryPath() {
@@ -18,22 +19,22 @@ public class ExportEntry {
         this.directoryPath = directoryPath;
     }
 
-    public String getClientHost() {
-        return clientHost;
+    public List<HostRule> getHostRules() {
+        return hostRules;
     }
-    public void setClientHost(String clientHost) {
-        this.clientHost = clientHost;
+    public void addHostRule(HostRule rule) {
+        this.hostRules.add(rule);
     }
-
-    public String getExportOptions() {
-        return exportOptions;
-    }
-    public void setExportOptions(String exportOptions) {
-        this.exportOptions = exportOptions;
+    public void removeHostRule(HostRule rule) {
+        this.hostRules.remove(rule);
     }
 
     @Override
     public String toString() {
-        return directoryPath + " " + clientHost + "(" + exportOptions + ")";
+        StringBuilder sb = new StringBuilder(directoryPath);
+        for (HostRule rule : hostRules) {
+            sb.append(" ").append(rule);
+        }
+        return sb.toString();
     }
 }
