@@ -1,11 +1,7 @@
 package aso.nfsapp.view;
 
-import javax.swing.DefaultListModel;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import java.awt.BorderLayout;
 
 public class DirectoryListPanel extends JPanel {
@@ -13,8 +9,17 @@ public class DirectoryListPanel extends JPanel {
     private final JList<String> directoryList = new JList<>(directoryListModel);
 
     public DirectoryListPanel() {
-        setLayout(new BorderLayout());
-        add(new JLabel("Carpetas compartidas:"), BorderLayout.NORTH);
+        setLayout(new BorderLayout(5, 5));
+        setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createEtchedBorder(),
+            "Directories to Export",
+            TitledBorder.LEFT,
+            TitledBorder.TOP
+        ));
+        
+        JLabel subTitle = new JLabel("Directories");
+        subTitle.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        add(subTitle, BorderLayout.NORTH);
         add(new JScrollPane(directoryList), BorderLayout.CENTER);
     }
 

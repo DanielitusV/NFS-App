@@ -18,9 +18,9 @@ public class MainWindow extends JFrame {
     private final JButton saveApplyButton = new JButton("Save & Apply");
 
     public MainWindow() {
-        super ("NFS App - NFS Server");
+        super ("YaST2 - YaST NFS Server");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(900, 600);
+        setSize(900, 650);
         setLocationRelativeTo(null);
 
         /* Barra superior de configuración */
@@ -36,6 +36,7 @@ public class MainWindow extends JFrame {
         JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
                 directoryListPanel, hostRulesPanel);
         split.setResizeWeight(0.5);
+        split.setDividerLocation(300);
 
         setLayout(new BorderLayout());
         add(topBar, BorderLayout.NORTH);
@@ -47,6 +48,10 @@ public class MainWindow extends JFrame {
     }
     public HostRulesTablePanel getHostRulesPanel() {
         return hostRulesPanel;
+    }
+    
+    public void updateHostRulesTitle(String directoryPath) {
+        hostRulesPanel.updateTitle(directoryPath);
     }
     public JButton getAddDirectoryButton() {
         return addDirectoryButton;

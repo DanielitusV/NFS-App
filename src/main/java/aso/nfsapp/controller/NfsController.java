@@ -4,13 +4,18 @@ import aso.nfsapp.model.ExportEntry;
 import aso.nfsapp.service.ExportFileManager;
 import aso.nfsapp.service.SystemPaths;
 import aso.nfsapp.view.MainWindow;
+import aso.nfsapp.view.HostRuleDialog;
 import aso.nfsapp.model.HostRule;
 
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class NfsController {
     private final MainWindow ui;
@@ -24,6 +29,9 @@ public class NfsController {
     }
 
     public void initialize() {
+        /* Cargar archivo /etc/exports existente */
+        loadExistingExports();
+
         /* Botones directorios */
         ui.getAddDirectoryButton().addActionListener(e -> addDirectory());
         ui.getEditDirectoryButton().addActionListener(e -> editDirectory());
@@ -49,13 +57,28 @@ public class NfsController {
     }
 
     private void addDirectory() {
-        String dir = JOptionPane.showInputDialog(ui, "Directory", "opt/docus");
-        if (dir == null || dir.isBlank()) {
+        String dir = JOptionPane.showInputDialog(ui, "Enter directory path to export:", "/opt/docus");
+        if (dir == null) {
+            return; // Usuario canceló
+        }
+        dir = dir.trim();
+        if (dir.isEmpty()) {
+            JOptionPane.showMessageDialog(ui, 
+                "El directorio no puede estar vacío. Por favor ingrese una ruta válida.", 
+                "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        ExportEntry entry = new ExportEntry(dir.trim());
+        // Asegurar que empiece con /
+        if (!dir.startsWith("/")) {
+            dir = "/" + dir;
+        }
+        
+        ExportEntry entry = new ExportEntry(dir);
+        // Agregar regla por defecto: 192.168.1.0/24 con rw
+        entry.addHostRule(new HostRule("192.168.1.0/24", "rw"));
+        
         directories.add(entry);
-        ui.getDirectoryListPanel().getDirectoryListModel().addElement(dir.trim());
+        ui.getDirectoryListPanel().getDirectoryListModel().addElement(dir);
         ui.getDirectoryListPanel().getDirectoryList().setSelectedIndex(directories.size() - 1);
         refreshRulesTable();
     }
@@ -66,12 +89,23 @@ public class NfsController {
             return;
         }
         String dir = JOptionPane.showInputDialog(ui, "Edit directory:", entry.getDirectoryPath());
-        if (dir == null || dir.isBlank()) {
+        if (dir == null) {
+            return; // Usuario canceló
+        }
+        dir = dir.trim();
+        if (dir.isEmpty()) {
+            JOptionPane.showMessageDialog(ui, 
+                "El directorio no puede estar vacío. Por favor ingrese una ruta válida.", 
+                "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        entry.setDirectoryPath(dir.trim());
+        // Asegurar que empiece con /
+        if (!dir.startsWith("/")) {
+            dir = "/" + dir;
+        }
+        entry.setDirectoryPath(dir);
         int index = ui.getDirectoryListPanel().getDirectoryList().getSelectedIndex();
-        ui.getDirectoryListPanel().getDirectoryListModel().set(index, dir.trim());
+        ui.getDirectoryListPanel().getDirectoryListModel().set(index, dir);
     }
 
     private void deleteDirectory() {
@@ -88,8 +122,11 @@ public class NfsController {
         clearRulesTable();
         ExportEntry entry = currentEntry();
         if (entry == null) {
+            ui.updateHostRulesTitle(null);
             return;
         }
+
+        ui.updateHostRulesTitle(entry.getDirectoryPath());
 
         DefaultTableModel table = ui.getHostRulesPanel().getRulesTableModel();
         for (HostRule rule : entry.getHostRules()) {
@@ -105,32 +142,67 @@ public class NfsController {
     private void addRule() {
         ExportEntry entry = currentEntry();
         if (entry == null) {
+            JOptionPane.showMessageDialog(ui, "Seleccione un directorio primero", 
+                "Error", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        String host = JOptionPane.showInputDialog(ui,"Host wildcard:", "*");
-        if (host == null || host.isBlank()) {
-            return;
+        
+        HostRuleDialog.HostRuleDialogResult result = HostRuleDialog.showDialog(ui, null, null);
+        if (result != null) {
+            HostRule rule = new HostRule(result.host, result.options);
+            entry.addHostRule(rule);
+            refreshRulesTable();
         }
-        String opts = JOptionPane.showInputDialog(ui, "Options:", "rw");
-        if (opts == null || opts.isBlank()) {
-            return;
-        }
-        HostRule rule = new HostRule(host.trim(), opts.trim());
-        entry.addHostRule(rule);
-        refreshRulesTable();
     }
 
     private void editRule() {
-        addRule();
+        ExportEntry entry = currentEntry();
+        if (entry == null) {
+            JOptionPane.showMessageDialog(ui, "Seleccione un directorio primero", 
+                "Error", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        int selectedRow = ui.getHostRulesPanel().getRulesTable().getSelectedRow();
+        if (selectedRow < 0 || selectedRow >= entry.getHostRules().size()) {
+            JOptionPane.showMessageDialog(ui, "Seleccione una regla para editar", 
+                "Error", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        HostRule oldRule = entry.getHostRules().get(selectedRow);
+        HostRuleDialog.HostRuleDialogResult result = HostRuleDialog.showDialog(
+            ui, oldRule.getHostWildCard(), oldRule.getOptions());
+        
+        if (result != null) {
+            entry.removeHostRule(oldRule);
+            HostRule newRule = new HostRule(result.host, result.options);
+            entry.addHostRule(newRule);
+            refreshRulesTable();
+        }
     }
 
     private void deleteRule() {
         ExportEntry entry = currentEntry();
         if (entry == null) {
+            JOptionPane.showMessageDialog(ui, "Seleccione un directorio primero", 
+                "Error", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        if (!entry.getHostRules().isEmpty()) {
-            HostRule rule = entry.getHostRules().get(0);  // Eliminamos la primera regla como ejemplo
+        
+        int selectedRow = ui.getHostRulesPanel().getRulesTable().getSelectedRow();
+        if (selectedRow < 0 || selectedRow >= entry.getHostRules().size()) {
+            JOptionPane.showMessageDialog(ui, "Seleccione una regla para eliminar", 
+                "Error", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        int confirm = JOptionPane.showConfirmDialog(ui, 
+            "¿Eliminar esta regla?", "Confirmar", 
+            JOptionPane.YES_NO_OPTION);
+        
+        if (confirm == JOptionPane.YES_OPTION) {
+            HostRule rule = entry.getHostRules().get(selectedRow);
             entry.removeHostRule(rule);
             refreshRulesTable();
         }
@@ -179,6 +251,55 @@ public class NfsController {
             process.waitFor();
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void loadExistingExports() {
+        Path exportsPath = SystemPaths.exportsPath();
+        if (!Files.exists(exportsPath)) {
+            return; // No existe el archivo, empezamos desde cero
+        }
+
+        try {
+            List<String> lines = Files.readAllLines(exportsPath);
+            // Patrón para parsear: /ruta host1(opts1) host2(opts2)
+            Pattern linePattern = Pattern.compile("^(\\S+)\\s+(.+)$");
+            
+            for (String line : lines) {
+                line = line.trim();
+                if (line.isEmpty() || line.startsWith("#")) {
+                    continue; // Ignorar líneas vacías y comentarios
+                }
+                
+                Matcher matcher = linePattern.matcher(line);
+                if (matcher.matches()) {
+                    String directory = matcher.group(1);
+                    String rulesPart = matcher.group(2);
+                    
+                    ExportEntry entry = new ExportEntry(directory);
+                    
+                    // Parsear las reglas: host1(opts1) host2(opts2)
+                    Pattern rulePattern = Pattern.compile("(\\S+)\\(([^)]+)\\)");
+                    Matcher ruleMatcher = rulePattern.matcher(rulesPart);
+                    
+                    while (ruleMatcher.find()) {
+                        String host = ruleMatcher.group(1);
+                        String options = ruleMatcher.group(2);
+                        entry.addHostRule(new HostRule(host, options));
+                    }
+                    
+                    directories.add(entry);
+                    ui.getDirectoryListPanel().getDirectoryListModel().addElement(directory);
+                }
+            }
+            
+            if (!directories.isEmpty()) {
+                ui.getDirectoryListPanel().getDirectoryList().setSelectedIndex(0);
+                refreshRulesTable();
+            }
+        } catch (IOException e) {
+            // Si no se puede leer, simplemente empezamos desde cero
+            System.err.println("No se pudo cargar /etc/exports: " + e.getMessage());
         }
     }
 }
