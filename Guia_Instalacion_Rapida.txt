@@ -1,0 +1,56 @@
+===============================================
+        NFS-App - Instalación Rápida
+===============================================
+
+Requisitos de Software
+---------------------
+- Sistema: OpenSUSE 15.6 o superior
+- Java 17 (sudo zypper install java-17-openjdk-devel)
+- Servidor NFS: (sudo zypper install nfs-kernel-server)
+- Permisos de administrador (sudo)
+
+Instalación
+-----------
+1. Abra una terminal en la carpeta raíz del proyecto.
+2. Haga ejecutable el script de instalación:
+   chmod +x install.sh
+
+3. Ejecute el instalador:
+   sudo ./install.sh
+
+> Esto instalará dependencias, compilará y preparará la app.
+
+Ejecución de la aplicación
+-------------------------
+- Opción 1: Ejecute el script generado ():
+    ./App-app.sh
+
+- Opción 2: Ejecuta el jar manualmente:
+    java -jar build/libs/nfs-app-1.0.0.jar
+
+Uso básico
+----------
+- Agrega directorios y reglas desde la interfaz.
+- Haz clic en "Save & Apply" para guardar los cambios (se te pedirá la contraseña de administrador).
+
+Notas importantes
+-----------------
+- Se requiere pkexec para modificar /etc/exports. Si hay problemas, instala polkit:  
+    sudo zypper install polkit
+
+- Verifica que el usuario tenga permisos de sudo.
+
+Desarrollo y compilación
+------------------------
+- Para recompilar tras cambios en el código:
+    ./gradlew build
+
+- Para generar un nuevo JAR ejecutable:
+    ./gradlew shadowJar
+
+Soporte
+-------
+- Si tienes errores, revisa los logs con:
+    sudo journalctl -u nfs-server -n 50
+
+===============================================
