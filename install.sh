@@ -67,19 +67,20 @@ cat > App_NFS_Suse.sh << 'EOF'
 #!/bin/bash
 cd "$(dirname "$0")"
 
-# Autenticar con pkexec al inicio (funciona en terminal y GUI)
-if pkexec echo "NFS App: Autenticación exitosa" >/dev/null 2>&1; then
+# Autenticar con sudo al inicio (cachea credenciales por ~15 minutos)
+echo "NFS App requiere privilegios de administrador"
+if sudo -v; then
+    echo "Autenticación exitosa. Iniciando NFS App..."
+    echo ""
+    # Mantener sudo activo durante toda la sesión de la app
+    (while true; do sudo -n true; sleep 50; done 2>/dev/null) &
+    SUDO_KEEPER_PID=$!
+    trap "kill $SUDO_KEEPER_PID 2>/dev/null" EXIT
+    
     # Ejecutar la aplicación
     java -jar build/libs/nfs-app-1.0.0.jar
 else
-    # Mostrar error según el entorno disponible
-    if command -v zenity &>/dev/null; then
-        zenity --error --text="Error: Se requieren privilegios de administrador"
-    elif command -v kdialog &>/dev/null; then
-        kdialog --error "Error: Se requieren privilegios de administrador"
-    else
-        echo "Error: Se requieren privilegios de administrador"
-    fi
+    echo "Error: Se requieren privilegios de administrador"
     exit 1
 fi
 EOF
@@ -111,6 +112,26 @@ sudo -u "$REAL_USER" touch "$TEMP_EXPORTS"
 chmod 777 "$TEMP_EXPORTS"
 chown "$REAL_USER:users" "$TEMP_EXPORTS"
 echo "Archivo temporal creado en: $TEMP_EXPORTS (permisos 777, dueño: $REAL_USER)"
+
+# Configurar sudoers para no pedir contraseña en comandos NFS
+echo ""
+echo "Configurando sudoers para NFS-App..."
+SUDOERS_FILE="/etc/sudoers.d/nfs-app"
+
+cat > /tmp/nfs-app-sudoers << EOFSUDO
+# Reglas para NFS-App - Permitir comandos NFS sin contraseña
+$REAL_USER ALL=(ALL) NOPASSWD: /usr/bin/cp * /etc/exports
+$REAL_USER ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart nfs-server
+$REAL_USER ALL=(ALL) NOPASSWD: /usr/bin/exportfs *
+EOFSUDO
+
+cp /tmp/nfs-app-sudoers "$SUDOERS_FILE"
+chmod 440 "$SUDOERS_FILE"
+chown root:root "$SUDOERS_FILE"
+echo "Reglas de sudoers creadas: $SUDOERS_FILE"
+echo "El usuario $REAL_USER puede ejecutar comandos NFS sin contraseña"
+
+rm -f /tmp/nfs-app-sudoers
 
 echo ""
 echo "========================================="

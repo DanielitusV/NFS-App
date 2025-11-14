@@ -117,8 +117,6 @@ public class NfsController {
         }
         
         ExportEntry entry = new ExportEntry(dir);
-        // Agregar regla por defecto: * con ro
-        entry.addHostRule(new HostRule("*", "ro"));
         
         directories.add(entry);
         ui.getDirectoryListPanel().getDirectoryListModel().addElement(dir);
@@ -350,7 +348,7 @@ public class NfsController {
             }
 
             // Comando para copiar el archivo temporal a /etc/exports
-            String copyCommand = "pkexec cp " + tempFilePath + " /etc/exports";
+            String copyCommand = "sudo cp " + tempFilePath + " /etc/exports";
             int copyResult = executeWithRoot(copyCommand);
             if (copyResult != 0) {
                 JOptionPane.showMessageDialog(ui, 
@@ -361,7 +359,7 @@ public class NfsController {
             }
 
             // Comando para reiniciar el servidor NFS
-            String restartCommand = "pkexec systemctl restart nfs-server";
+            String restartCommand = "sudo systemctl restart nfs-server";
             int restartResult = executeWithRoot(restartCommand);
             if (restartResult != 0) {
                 JOptionPane.showMessageDialog(ui, 
@@ -371,7 +369,7 @@ public class NfsController {
             }
 
             // Comando para aplicar las exportaciones
-            String exportfsCommand = "pkexec exportfs -rav";
+            String exportfsCommand = "sudo exportfs -rav";
             executeWithRoot(exportfsCommand);
 
             JOptionPane.showMessageDialog(ui, "Cambios aplicados con éxito\nArchivo copiado a /etc/exports");
@@ -421,7 +419,7 @@ public class NfsController {
                 if (confirm == JOptionPane.YES_OPTION) {
                     try {
                         // Establecer permisos 777 recursivamente
-                        String chmodCommand = "pkexec chmod -R 777 " + dirPath;
+                        String chmodCommand = "sudo chmod -R 777 " + dirPath;
                         int result = executeWithRoot(chmodCommand);
                         
                         if (result != 0) {
@@ -460,8 +458,8 @@ public class NfsController {
         
         try {
             if (SystemPaths.isLinux()) {
-                // Crear directorio con permisos 777 usando pkexec
-                String mkdirCommand = "pkexec mkdir -p " + dirPath;
+                // Crear directorio con permisos 777 usando sudo
+                String mkdirCommand = "sudo mkdir -p " + dirPath;
                 int result = executeWithRoot(mkdirCommand);
                 
                 if (result != 0) {
@@ -471,8 +469,8 @@ public class NfsController {
                     return false;
                 }
                 
-                // Establecer permisos 777
-                String chmodCommand = "pkexec chmod 777 " + dirPath;
+                // Establecer permisos 777 recursivamente
+                String chmodCommand = "sudo chmod -R 777 " + dirPath;
                 result = executeWithRoot(chmodCommand);
                 
                 if (result != 0) {
@@ -522,7 +520,7 @@ public class NfsController {
             // Si /etc/exports existe, copiarlo al temporal
             if (Files.exists(Path.of("/etc/exports"))) {
                 try {
-                    String copyCommand = "pkexec cp /etc/exports " + tempPath;
+                    String copyCommand = "sudo cp /etc/exports " + tempPath;
                     int result = executeWithRoot(copyCommand);
                     if (result != 0) {
                         System.err.println("No se pudo copiar /etc/exports. Se iniciará con configuración vacía.");
