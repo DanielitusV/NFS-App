@@ -26,6 +26,7 @@ Instalación
    sudo ./install.sh
 
 > Esto instalará dependencias, compilará y preparará la app.
+> Si es la primera vez que se ejecuta el script en promedio tarda 2 minutos en finalizar
 
 Ejecución de la aplicación
 -------------------------

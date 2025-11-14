@@ -67,22 +67,36 @@ cat > App_NFS_Suse.sh << 'EOF'
 #!/bin/bash
 cd "$(dirname "$0")"
 
-# Autenticar con sudo al inicio (cachea credenciales por ~15 minutos)
-echo "NFS App requiere privilegios de administrador"
-if sudo -v; then
-    echo "Autenticación exitosa. Iniciando NFS App..."
-    echo ""
-    # Mantener sudo activo durante toda la sesión de la app
-    (while true; do sudo -n true; sleep 50; done 2>/dev/null) &
-    SUDO_KEEPER_PID=$!
-    trap "kill $SUDO_KEEPER_PID 2>/dev/null" EXIT
-    
-    # Ejecutar la aplicación
-    java -jar build/libs/nfs-app-1.0.0.jar
+# Última modificación
+if [ -t 0 ]; then
+    echo "NFS App requiere privilegios de administrador"
+    if ! sudo -v; then
+        echo "Error: Se requieren privilegios de administrador"
+        exit 1
+    fi
 else
-    echo "Error: Se requieren privilegios de administrador"
-    exit 1
+    if ! pkexec true 2>/dev/null; then
+        if command -v zenity &>/dev/null; then
+            zenity --error --text="Error: Se requieren privilegios de administrador"
+        elif command -v kdialog &>/dev/null; then
+            kdialog --error "Error: Se requieren privilegios de administrador"
+        fi
+        exit 1
+    fi
+    # Después de autenticar con pkexec, validar con sudo
+    sudo -v 2>/dev/null
 fi
+
+echo "Autenticación exitosa. Iniciando NFS App..."
+echo ""
+
+# Mantener sudo activo durante toda la sesión de la app
+(while true; do sudo -n true; sleep 50; done 2>/dev/null) &
+SUDO_KEEPER_PID=$!
+trap "kill $SUDO_KEEPER_PID 2>/dev/null" EXIT
+
+# Ejecutar la aplicación
+java -jar build/libs/nfs-app-1.0.0.jar
 EOF
 
 chmod +x App_NFS_Suse.sh
