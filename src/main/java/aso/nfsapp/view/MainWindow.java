@@ -8,6 +8,11 @@ import javax.swing.JSplitPane;
 
 import java.awt.BorderLayout;
 
+/**
+ * Ventana principal de NFS App.
+ * Contiene la interfaz gráfica con los paneles de directorios y reglas de host.
+ * Mantiene estado de cambios sin guardar para controlar el cierre de la aplicación.
+ */
 public class MainWindow extends JFrame {
     private final DirectoryListPanel directoryListPanel = new DirectoryListPanel();
     private final HostRulesTablePanel hostRulesPanel = new HostRulesTablePanel();
@@ -16,6 +21,8 @@ public class MainWindow extends JFrame {
     private final JButton editDirectoryButton = new JButton("Editar");
     private final JButton deleteDirectoryButton = new JButton("Eliminar");
     private final JButton saveApplyButton = new JButton("Guardar y Aplicar");
+    
+    private boolean hasUnsavedChanges = false;
 
     public MainWindow() {
         super ("NFS App");
@@ -64,6 +71,14 @@ public class MainWindow extends JFrame {
     }
     public JButton getSaveApplyButton() {
         return saveApplyButton;
+    }
+    
+    public boolean hasUnsavedChanges() {
+        return hasUnsavedChanges;
+    }
+    
+    public void setUnsavedChanges(boolean unsaved) {
+        this.hasUnsavedChanges = unsaved;
     }
 
 }

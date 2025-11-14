@@ -1,5 +1,10 @@
 package aso.nfsapp.model;
 
+/**
+ * Representa una regla de host en una entrada de /etc/exports.
+ * Define el wildcard del host destino y las opciones NFS (rw, ro, sync, etc.).
+ * Se serializa como: host(opciones)
+ */
 public class HostRule {
     private String hostWildCard;    // "*", "192.168.100.0/24"
     private String options;         // "rw", "ro,sync", ...

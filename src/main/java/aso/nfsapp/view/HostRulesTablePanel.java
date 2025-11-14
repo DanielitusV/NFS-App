@@ -5,6 +5,10 @@ import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.BorderLayout;
 
+/**
+ * Panel que muestra las reglas de host (permisos) para el directorio seleccionado.
+ * Contiene tabla de hosts, opciones y botones para agregar, editar y eliminar reglas.
+ */
 public class HostRulesTablePanel extends JPanel {
     private final DefaultTableModel rulesTableModel =
         new DefaultTableModel(new Object[]{"Host Wild Card", "Opciones"}, 0) {

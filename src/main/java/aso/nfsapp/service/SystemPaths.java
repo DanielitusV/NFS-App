@@ -1,6 +1,11 @@
 package aso.nfsapp.service;
 import java.nio.file.Path;
 
+/**
+ * Utilidad para obtener rutas específicas del sistema según el OS.
+ * En Linux: /etc/exports (real) y ~/.config/nfs-app/exports.tmp (temporal).
+ * En Windows: C:\tmp\exports.txt (solo para pruebas).
+ */
 public final class SystemPaths {
     private SystemPaths() {}
 

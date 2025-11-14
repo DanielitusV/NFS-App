@@ -3,6 +3,11 @@ package aso.nfsapp.model;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Representa una entrada de directorio en /etc/exports.
+ * Almacena la ruta del directorio, las reglas de host asociadas y comentarios opcionales.
+ * Se serializa como: /ruta host1(opciones1) host2(opciones2)
+ */
 public class ExportEntry {
     private String directoryPath;
     private List<HostRule> hostRules;

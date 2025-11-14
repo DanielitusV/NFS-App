@@ -66,10 +66,51 @@ echo "Creando script de ejecucion..."
 cat > App_NFS_Suse.sh << 'EOF'
 #!/bin/bash
 cd "$(dirname "$0")"
-java -jar build/libs/nfs-app-1.0.0.jar
+
+# Autenticar con pkexec al inicio (funciona en terminal y GUI)
+if pkexec echo "NFS App: Autenticación exitosa" >/dev/null 2>&1; then
+    # Ejecutar la aplicación
+    java -jar build/libs/nfs-app-1.0.0.jar
+else
+    # Mostrar error según el entorno disponible
+    if command -v zenity &>/dev/null; then
+        zenity --error --text="Error: Se requieren privilegios de administrador"
+    elif command -v kdialog &>/dev/null; then
+        kdialog --error "Error: Se requieren privilegios de administrador"
+    else
+        echo "Error: Se requieren privilegios de administrador"
+    fi
+    exit 1
+fi
 EOF
 
 chmod +x App_NFS_Suse.sh
+
+# Crear directorio para archivos temporales
+echo ""
+echo "Creando directorio de configuracion..."
+
+# Obtener el usuario real (el que ejecutó sudo)
+if [ -n "$SUDO_USER" ]; then
+    REAL_USER="$SUDO_USER"
+    REAL_HOME=$(eval echo ~$SUDO_USER)
+else
+    REAL_USER="$USER"
+    REAL_HOME="$HOME"
+fi
+
+echo "Usuario: $REAL_USER"
+echo "Directorio home: $REAL_HOME"
+
+CONFIG_DIR="$REAL_HOME/.config/nfs-app"
+sudo -u "$REAL_USER" mkdir -p "$CONFIG_DIR"
+
+# Crear archivo temporal con permisos completos
+TEMP_EXPORTS="$CONFIG_DIR/exports.tmp"
+sudo -u "$REAL_USER" touch "$TEMP_EXPORTS"
+chmod 777 "$TEMP_EXPORTS"
+chown "$REAL_USER:users" "$TEMP_EXPORTS"
+echo "Archivo temporal creado en: $TEMP_EXPORTS (permisos 777, dueño: $REAL_USER)"
 
 echo ""
 echo "========================================="
@@ -77,7 +118,7 @@ echo "Instalacion completada!"
 echo "========================================="
 echo ""
 echo "Para ejecutar la aplicacion:"
-echo "  ./nfs-app.sh"
+echo "  ./App_NFS_Suse.sh"
 echo ""
 echo "O directamente:"
 echo "  java -jar build/libs/nfs-app-1.0.0.jar"

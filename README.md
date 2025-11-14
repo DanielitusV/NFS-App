@@ -29,7 +29,28 @@ sudo zypper install java-17-openjdk-devel
 # Instalar servidor NFS (si no está instalado)
 sudo zypper install nfs-kernel-server
 ```
-### 2. Compilar la aplicación
+### 2. Instalar dependencias con el script
+La consola debe abrirse en la raíz del proyecto
+```
+# Permitir que el archivo .sh sea ejecutable
+chmod +x install.sh
+
+# MUY IMPORTANTE: Ejecutar el script con permisos de administrador
+sudo ./install.sh
+```
+**Nota**: Se requieren permisos de administrador para que la aplicación pueda modificar permisos en los archivos.
+
+### 3. Ejecutar la aplicación
+Se puede abrir la aplicación con el ejecutando directamente el archivo `App_NFS_Suse.sh`◘
+
+ó
+
+Con el siguiente comando:
+```
+java -jar build/libs/nfs-app-1.0.0.jar
+```
+
+### Opcional - Compilar la aplicación por separado (no es necesario si se utilizó el ./install.sh)
 ```
 # Dar permisos de ejecucuión al script Gradle
 chmod +x gradlew
@@ -39,15 +60,7 @@ chmod +x gradlew
 ```
 El JAR se generará en: `build/libs/nfs-app-1.0.0.jar`
 
-### 3. Ejecutar la aplicación
-```
-# Ejecutar directamente
-java -jar build/libs/nfs-app-1.0.0.jar
 
-# O usar el script proporcionado
-chmod +x install.sh
-./install.sh
-```
 
 ## Uso
 ### Iniciar la aplicación

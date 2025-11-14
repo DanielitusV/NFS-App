@@ -5,12 +5,17 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Diálogo para configurar reglas de host (permisos) en NFS.
+ * Permite especificar el host destino y seleccionar opciones de NFS (rw, ro, sync, etc.).
+ * Valida que siempre haya al menos rw o ro seleccionado.
+ */
 public class HostRuleDialog extends JDialog {
     private boolean confirmed = false;
     private String hostWildcard = "*";
     private String selectedOptions = "";
 
-    private final JTextField hostField = new JTextField("192.168.1.0/24", 20);
+    private final JTextField hostField = new JTextField("*", 20);
     private final List<JCheckBox> optionCheckboxes = new ArrayList<>();
     private final JTextField anonuidField = new JTextField("", 10);
     private final JTextField anongidField = new JTextField("", 10);
@@ -37,7 +42,7 @@ public class HostRuleDialog extends JDialog {
 
     public HostRuleDialog(JFrame parent, String currentHost, String currentOptions) {
         super(parent, "Configurar Regla de Host", true);
-        this.hostWildcard = currentHost != null && !currentHost.isEmpty() ? currentHost : "192.168.1.0/24";
+        this.hostWildcard = currentHost != null && !currentHost.isEmpty() ? currentHost : "*";
         this.selectedOptions = currentOptions != null ? currentOptions : "rw";
 
         setLayout(new BorderLayout(10, 10));
@@ -190,7 +195,7 @@ public class HostRuleDialog extends JDialog {
         add(optionsContainer, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
         
-        setSize(500, 450);
+        setSize(700, 600);
     }
 
     private void buildOptionsString() {

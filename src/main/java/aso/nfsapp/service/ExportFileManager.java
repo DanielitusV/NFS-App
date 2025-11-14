@@ -7,6 +7,11 @@ import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.ArrayList;
 
+/**
+ * Gestiona la lectura y escritura del archivo /etc/exports.
+ * En Linux escribe en archivo temporal para luego copiarlo con pkexec.
+ * Preserva comentarios del archivo original al guardar.
+ */
 public class ExportFileManager {
 
     public void writeFile(List<String> lines) throws IOException {
