@@ -17,7 +17,7 @@ fi
 echo "Verificando Java..."
 if ! command -v java &> /dev/null; then
     echo "Java no encontrado. Instalando Java 17..."
-    sudo zypper install -y java-17-openjdk
+    sudo zypper install -y java-17-openjdk-devel
 else
     JAVA_VERSION=$(java -version 2>&1 | head -n 1)
     echo "Java encontrado: $JAVA_VERSION"
@@ -63,13 +63,13 @@ fi
 # Crear script de ejecución
 echo ""
 echo "Creando script de ejecucion..."
-cat > nfs-app.sh << 'EOF'
+cat > App_NFS_Suse.sh << 'EOF'
 #!/bin/bash
 cd "$(dirname "$0")"
 java -jar build/libs/nfs-app-1.0.0.jar
 EOF
 
-chmod +x nfs-app.sh
+chmod +x App_NFS_Suse.sh
 
 echo ""
 echo "========================================="

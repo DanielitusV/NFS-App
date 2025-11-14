@@ -7,7 +7,7 @@ import java.awt.BorderLayout;
 
 public class HostRulesTablePanel extends JPanel {
     private final DefaultTableModel rulesTableModel =
-        new DefaultTableModel(new Object[]{"Host Wild Card", "Options"}, 0) {
+        new DefaultTableModel(new Object[]{"Host Wild Card", "Opciones"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false; // No editar directamente en la tabla
@@ -15,15 +15,15 @@ public class HostRulesTablePanel extends JPanel {
         };
     private final JTable rulesTable = new JTable(rulesTableModel);
 
-    private final JButton addHostButton = new JButton("Add Host");
-    private final JButton editHostButton = new JButton("Edit");
-    private final JButton deleteHostButton = new JButton("Delete");
+    private final JButton addHostButton = new JButton("Agregar Host");
+    private final JButton editHostButton = new JButton("Editar");
+    private final JButton deleteHostButton = new JButton("Eliminar");
 
     public HostRulesTablePanel() {
         setLayout(new BorderLayout(5, 5));
         setBorder(BorderFactory.createTitledBorder(
             BorderFactory.createEtchedBorder(),
-            "Export Options for the Selected Directory",
+            "Opciones de Exportación para el Directorio Seleccionado",
             TitledBorder.LEFT,
             TitledBorder.TOP
         ));
@@ -46,14 +46,14 @@ public class HostRulesTablePanel extends JPanel {
         if (directoryPath != null && !directoryPath.isEmpty()) {
             setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(),
-                "Export Options for: " + directoryPath,
+                "Opciones de Exportación para: " + directoryPath,
                 TitledBorder.LEFT,
                 TitledBorder.TOP
             ));
         } else {
             setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createEtchedBorder(),
-                "Export Options for the Selected Directory",
+                "Opciones de Exportación para el Directorio Seleccionado",
                 TitledBorder.LEFT,
                 TitledBorder.TOP
             ));

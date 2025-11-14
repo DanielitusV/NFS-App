@@ -9,6 +9,7 @@ import aso.nfsapp.model.HostRule;
 
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -57,7 +58,7 @@ public class NfsController {
     }
 
     private void addDirectory() {
-        String dir = JOptionPane.showInputDialog(ui, "Enter directory path to export:", "/opt/docus");
+        String dir = JOptionPane.showInputDialog(ui, "Ingrese la ruta del directorio a exportar:", "/opt/docus");
         if (dir == null) {
             return; // Usuario canceló
         }
@@ -88,7 +89,7 @@ public class NfsController {
         if (entry == null) {
             return;
         }
-        String dir = JOptionPane.showInputDialog(ui, "Edit directory:", entry.getDirectoryPath());
+        String dir = JOptionPane.showInputDialog(ui, "Editar directorio:", entry.getDirectoryPath());
         if (dir == null) {
             return; // Usuario canceló
         }
@@ -214,47 +215,168 @@ public class NfsController {
             for (ExportEntry e: directories) {
                 lines.add(e.toString());
             }
+            // Escribir en archivo temporal (Linux) o directo (Windows)
             fileManager.writeFile(lines);
 
-            String msg = "Guardado en: " + fileManager.exportsPathString();
             if (SystemPaths.isLinux()) {
+                // En Linux, copiar el temporal a /etc/exports con privilegios
                 applyChangesWithPkexec();
             } else {
-                msg += "\n(Windows: solo prueba. En Linux copiará a /etc/exports).";
+                // En Windows, solo guardar el archivo
+                String msg = "Guardado en: " + fileManager.exportsPathString() +
+                            "\n(Windows: solo prueba. En Linux copiará a /etc/exports).";
+                JOptionPane.showMessageDialog(ui, msg);
             }
-            JOptionPane.showMessageDialog(ui, msg);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(ui, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            String errorMsg = "Error al guardar: " + e.getMessage();
+            if (e.getCause() != null) {
+                errorMsg += "\nCausa: " + e.getCause().getMessage();
+            }
+            JOptionPane.showMessageDialog(ui, errorMsg, "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
     }
 
     private void applyChangesWithPkexec() {
         try {
-            String copyCommand = "pkexec cp " + fileManager.exportsPathString() + " /etc/exports";
-            executeWithRoot(copyCommand);
+            String tempFilePath = fileManager.tempExportsPathString();
 
+            // Verificar si el archivo temporal existe
+            File tempFile = new File(tempFilePath);
+            if (!tempFile.exists()) {
+                JOptionPane.showMessageDialog(ui, "El archivo temporal no se encuentra: " + tempFilePath, 
+                    "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Comando para copiar el archivo temporal a /etc/exports
+            String copyCommand = "pkexec cp " + tempFilePath + " /etc/exports";
+            int copyResult = executeWithRoot(copyCommand);
+            if (copyResult != 0) {
+                JOptionPane.showMessageDialog(ui, 
+                    "Error al copiar el archivo a /etc/exports. Código: " + copyResult + 
+                    "\nAsegúrese de tener instalado pkexec y permisos adecuados.", 
+                    "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Comando para reiniciar el servidor NFS
             String restartCommand = "pkexec systemctl restart nfs-server";
-            executeWithRoot(restartCommand);
+            int restartResult = executeWithRoot(restartCommand);
+            if (restartResult != 0) {
+                JOptionPane.showMessageDialog(ui, 
+                    "Advertencia: No se pudo reiniciar nfs-server. Código: " + restartResult + 
+                    "\nPuede que el servicio no esté instalado o tenga otro nombre (nfs-kernel-server).", 
+                    "Advertencia", JOptionPane.WARNING_MESSAGE);
+            }
 
+            // Comando para aplicar las exportaciones
             String exportfsCommand = "pkexec exportfs -rav";
             executeWithRoot(exportfsCommand);
 
-            JOptionPane.showMessageDialog(ui, "Cambios aplicados con éxito");
+            JOptionPane.showMessageDialog(ui, "Cambios aplicados con éxito\nArchivo copiado a /etc/exports");
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(ui, "Error al aplicar cambios: " + e.getMessage());
+            JOptionPane.showMessageDialog(ui, "Error al aplicar cambios: " + e.getMessage() +
+                "\n\nVerifique que pkexec esté instalado y funcionando.", 
+                "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            JOptionPane.showMessageDialog(ui, "Operación interrumpida: " + e.getMessage(), 
+                "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+            Thread.currentThread().interrupt();
         }
     }
 
-    private void executeWithRoot(String command) throws IOException {
-        Process process = Runtime.getRuntime().exec(command);
+    private int executeWithRoot(String command) throws IOException, InterruptedException {
+        Process process = new ProcessBuilder(command.split(" ")).start();
+        return process.waitFor();
+    }
+
+    private void loadExistingExportsLinux() {
         try {
-            process.waitFor();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            // Copiar /etc/exports al archivo temporal para poder leerlo sin privilegios
+            String tempPath = fileManager.tempExportsPathString();
+            File tempFile = new File(tempPath);
+            
+            // Crear directorio padre si no existe
+            if (tempFile.getParentFile() != null) {
+                tempFile.getParentFile().mkdirs();
+            }
+            
+            // Si /etc/exports existe, copiarlo al temporal
+            if (Files.exists(Path.of("/etc/exports"))) {
+                try {
+                    String copyCommand = "pkexec cp /etc/exports " + tempPath;
+                    int result = executeWithRoot(copyCommand);
+                    if (result != 0) {
+                        System.err.println("No se pudo copiar /etc/exports. Se iniciará con configuración vacía.");
+                        return;
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error al copiar /etc/exports: " + e.getMessage());
+                    return;
+                }
+            }
+            
+            // Leer desde el archivo temporal
+            if (!tempFile.exists()) {
+                return;
+            }
+            
+            List<String> lines = Files.readAllLines(tempFile.toPath());
+            parseExportsLines(lines);
+            
+        } catch (Exception e) {
+            System.err.println("Error al cargar /etc/exports: " + e.getMessage());
+        }
+    }
+
+    private void parseExportsLines(List<String> lines) {
+        Pattern linePattern = Pattern.compile("^(\\S+)\\s+(.+)$");
+        
+        for (String line : lines) {
+            line = line.trim();
+            if (line.isEmpty() || line.startsWith("#")) {
+                continue; // Ignorar líneas vacías y comentarios
+            }
+            
+            Matcher matcher = linePattern.matcher(line);
+            if (matcher.matches()) {
+                String directory = matcher.group(1);
+                String rulesPart = matcher.group(2);
+                
+                ExportEntry entry = new ExportEntry(directory);
+                
+                // Parsear las reglas: host1(opts1) host2(opts2)
+                Pattern rulePattern = Pattern.compile("(\\S+)\\(([^)]+)\\)");
+                Matcher ruleMatcher = rulePattern.matcher(rulesPart);
+                
+                while (ruleMatcher.find()) {
+                    String host = ruleMatcher.group(1);
+                    String options = ruleMatcher.group(2);
+                    entry.addHostRule(new HostRule(host, options));
+                }
+                
+                directories.add(entry);
+                ui.getDirectoryListPanel().getDirectoryListModel().addElement(directory);
+            }
+        }
+        
+        if (!directories.isEmpty()) {
+            ui.getDirectoryListPanel().getDirectoryList().setSelectedIndex(0);
+            refreshRulesTable();
         }
     }
 
     private void loadExistingExports() {
+        // En Linux, intentar leer /etc/exports real con pkexec
+        if (SystemPaths.isLinux()) {
+            loadExistingExportsLinux();
+            return;
+        }
+        
+        // En Windows, leer el archivo de prueba
         Path exportsPath = SystemPaths.exportsPath();
         if (!Files.exists(exportsPath)) {
             return; // No existe el archivo, empezamos desde cero
@@ -262,44 +384,10 @@ public class NfsController {
 
         try {
             List<String> lines = Files.readAllLines(exportsPath);
-            // Patrón para parsear: /ruta host1(opts1) host2(opts2)
-            Pattern linePattern = Pattern.compile("^(\\S+)\\s+(.+)$");
-            
-            for (String line : lines) {
-                line = line.trim();
-                if (line.isEmpty() || line.startsWith("#")) {
-                    continue; // Ignorar líneas vacías y comentarios
-                }
-                
-                Matcher matcher = linePattern.matcher(line);
-                if (matcher.matches()) {
-                    String directory = matcher.group(1);
-                    String rulesPart = matcher.group(2);
-                    
-                    ExportEntry entry = new ExportEntry(directory);
-                    
-                    // Parsear las reglas: host1(opts1) host2(opts2)
-                    Pattern rulePattern = Pattern.compile("(\\S+)\\(([^)]+)\\)");
-                    Matcher ruleMatcher = rulePattern.matcher(rulesPart);
-                    
-                    while (ruleMatcher.find()) {
-                        String host = ruleMatcher.group(1);
-                        String options = ruleMatcher.group(2);
-                        entry.addHostRule(new HostRule(host, options));
-                    }
-                    
-                    directories.add(entry);
-                    ui.getDirectoryListPanel().getDirectoryListModel().addElement(directory);
-                }
-            }
-            
-            if (!directories.isEmpty()) {
-                ui.getDirectoryListPanel().getDirectoryList().setSelectedIndex(0);
-                refreshRulesTable();
-            }
+            parseExportsLines(lines);
         } catch (IOException e) {
             // Si no se puede leer, simplemente empezamos desde cero
-            System.err.println("No se pudo cargar /etc/exports: " + e.getMessage());
+            System.err.println("No se pudo cargar el archivo exports: " + e.getMessage());
         }
     }
 }

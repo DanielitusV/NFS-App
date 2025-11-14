@@ -6,10 +6,12 @@ import java.util.List;
 public class ExportEntry {
     private String directoryPath;
     private List<HostRule> hostRules;
+    private String comment; // Comentario asociado (opcional)
 
     public ExportEntry(String directoryPath) {
         this.directoryPath = directoryPath;
         this.hostRules = new ArrayList<>();
+        this.comment = null;
     }
 
     public String getDirectoryPath() {
@@ -27,6 +29,13 @@ public class ExportEntry {
     }
     public void removeHostRule(HostRule rule) {
         this.hostRules.remove(rule);
+    }
+
+    public String getComment() {
+        return comment;
+    }
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
     @Override

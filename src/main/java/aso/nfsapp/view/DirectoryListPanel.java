@@ -12,12 +12,12 @@ public class DirectoryListPanel extends JPanel {
         setLayout(new BorderLayout(5, 5));
         setBorder(BorderFactory.createTitledBorder(
             BorderFactory.createEtchedBorder(),
-            "Directories to Export",
+            "Directorios a Exportar",
             TitledBorder.LEFT,
             TitledBorder.TOP
         ));
         
-        JLabel subTitle = new JLabel("Directories");
+        JLabel subTitle = new JLabel("Directorios");
         subTitle.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         add(subTitle, BorderLayout.NORTH);
         add(new JScrollPane(directoryList), BorderLayout.CENTER);

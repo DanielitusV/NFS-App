@@ -12,13 +12,13 @@ public class MainWindow extends JFrame {
     private final DirectoryListPanel directoryListPanel = new DirectoryListPanel();
     private final HostRulesTablePanel hostRulesPanel = new HostRulesTablePanel();
 
-    private final JButton addDirectoryButton = new JButton("Add Directory");
-    private final JButton editDirectoryButton = new JButton("Edit");
-    private final JButton deleteDirectoryButton = new JButton("Delete");
-    private final JButton saveApplyButton = new JButton("Save & Apply");
+    private final JButton addDirectoryButton = new JButton("Agregar Directorio");
+    private final JButton editDirectoryButton = new JButton("Editar");
+    private final JButton deleteDirectoryButton = new JButton("Eliminar");
+    private final JButton saveApplyButton = new JButton("Guardar y Aplicar");
 
     public MainWindow() {
-        super ("YaST2 - YaST NFS Server");
+        super ("NFS App");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(900, 650);
         setLocationRelativeTo(null);

@@ -14,4 +14,12 @@ public final class SystemPaths {
         }
         return Path.of("C:\\tmp\\exports.txt");
     }
+
+    public static Path tempExportsPath() {
+        String userHome = System.getProperty("user.home");
+        if (isLinux()) {
+            return Path.of(userHome, ".config", "nfs-app", "exports.tmp");
+        }
+        return Path.of("C:\\tmp\\exports.txt");
+    }
 }
