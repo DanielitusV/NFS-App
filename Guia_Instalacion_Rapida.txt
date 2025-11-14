@@ -5,9 +5,9 @@
 Requisitos de Software
 ---------------------
 - Sistema: OpenSUSE 15.6 o superior
-- Java 17 (sudo zypper install java-17-openjdk-devel)
-- Servidor NFS: (sudo zypper install nfs-kernel-server)
-- Permisos de administrador (sudo)
+- Java 17 -> Ejecutar el comando -> sudo zypper install java-17-openjdk-devel
+- Servidor NFS -> Ejecutar el comando -> sudo zypper install nfs-kernel-server
+- Permisos de administrador (sudo) -> Ejecutar el comando -> sudo zypper install polkit
 
 Instalación
 -----------
@@ -23,7 +23,7 @@ Instalación
 Ejecución de la aplicación
 -------------------------
 - Opción 1: Ejecute el script generado ():
-    ./App-app.sh
+    ./App_NFS_Suse.sh"
 
 - Opción 2: Ejecuta el jar manualmente:
     java -jar build/libs/nfs-app-1.0.0.jar
@@ -50,7 +50,7 @@ Desarrollo y compilación
 
 Soporte
 -------
-- Si tienes errores, revisa los logs con:
+- Si tienes errores, revise los logs con:
     sudo journalctl -u nfs-server -n 50
 
 ===============================================
