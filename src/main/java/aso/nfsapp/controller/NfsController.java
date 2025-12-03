@@ -35,14 +35,8 @@ public class NfsController {
     }
 
     public void initialize() {
-        /* Cargar archivo /etc/exports existente */
-        loadExistingExports();
-
-        /* Botones directorios */
-        ui.getAddDirectoryButton().addActionListener(e -> addDirectory());
-        ui.getEditDirectoryButton().addActionListener(e -> editDirectory());
-        ui.getDeleteDirectoryButton().addActionListener(e -> deleteDirectory());
-
+        /* Agregar listeners ANTES de cargar los exports */
+        
         /* Selección directorio -> Refresca las reglas y habilita boton de agregar host */
         ui.getDirectoryListPanel().getDirectoryList().addListSelectionListener(e -> {
            if (!e.getValueIsAdjusting()) {
@@ -60,6 +54,14 @@ public class NfsController {
                ui.setEditDeleteHostEnabled(hasRowSelection);
            }
         });
+
+        /* Ahora cargar archivo /etc/exports (los listeners ya están listos) */
+        loadExistingExports();
+
+        /* Botones directorios */
+        ui.getAddDirectoryButton().addActionListener(e -> addDirectory());
+        ui.getEditDirectoryButton().addActionListener(e -> editDirectory());
+        ui.getDeleteDirectoryButton().addActionListener(e -> deleteDirectory());
 
         /* Botones reglas */
         ui.getHostRulesPanel().getAddHostButton().addActionListener(e -> addRule());
@@ -312,6 +314,16 @@ public class NfsController {
         if (selectedRow < 0 || selectedRow >= entry.getHostRules().size()) {
             JOptionPane.showMessageDialog(ui, "Seleccione una regla para eliminar", 
                 "Error", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        // Validar que no sea la última regla (un directorio debe tener al menos una)
+        if (entry.getHostRules().size() <= 1) {
+            JOptionPane.showMessageDialog(ui, 
+                "No se puede eliminar la última regla.\n\n" +
+                "Un directorio debe tener al menos una regla de host.\n" +
+                "Si desea eliminar este directorio completamente, use 'Eliminar Directorio'.",
+                "Error: Regla Obligatoria", JOptionPane.ERROR_MESSAGE);
             return;
         }
         
