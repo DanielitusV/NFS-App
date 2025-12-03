@@ -46,30 +46,17 @@ fi
 # Compilar aplicación
 echo ""
 echo "Compilando aplicacion..."
-
-# Dar permisos al gradlew
 if [ -f "gradlew" ]; then
     chmod +x gradlew
-    
-    # Intentar con gradlew (descargará dependencias en primer uso)
-    ./gradlew clean shadowJar
-    GRADLE_RESULT=$?
-else
-    # Fallback a gradle del sistema si gradlew no existe
-    if command -v gradle &> /dev/null; then
-        echo "Usando gradle del sistema..."
-        gradle clean shadowJar
-        GRADLE_RESULT=$?
+    ./gradlew shadowJar
+    if [ $? -eq 0 ]; then
+        echo "Compilacion exitosa!"
     else
-        echo "Error: No se encontro gradlew ni gradle"
+        echo "Error en la compilacion"
         exit 1
     fi
-fi
-
-if [ $GRADLE_RESULT -eq 0 ]; then
-    echo "Compilacion exitosa!"
 else
-    echo "Error en la compilacion"
+    echo "Error: gradlew no encontrado"
     exit 1
 fi
 
@@ -80,36 +67,22 @@ cat > App_NFS_Suse.sh << 'EOF'
 #!/bin/bash
 cd "$(dirname "$0")"
 
-# Última modificación
-if [ -t 0 ]; then
-    echo "NFS App requiere privilegios de administrador"
-    if ! sudo -v; then
-        echo "Error: Se requieren privilegios de administrador"
-        exit 1
-    fi
+# Autenticar con sudo al inicio (cachea credenciales por ~15 minutos)
+echo "NFS App requiere privilegios de administrador"
+if sudo -v; then
+    echo "Autenticación exitosa. Iniciando NFS App..."
+    echo ""
+    # Mantener sudo activo durante toda la sesión de la app
+    (while true; do sudo -n true; sleep 50; done 2>/dev/null) &
+    SUDO_KEEPER_PID=$!
+    trap "kill $SUDO_KEEPER_PID 2>/dev/null" EXIT
+    
+    # Ejecutar la aplicación
+    java -jar build/libs/nfs-app-1.0.0.jar
 else
-    if ! pkexec true 2>/dev/null; then
-        if command -v zenity &>/dev/null; then
-            zenity --error --text="Error: Se requieren privilegios de administrador"
-        elif command -v kdialog &>/dev/null; then
-            kdialog --error "Error: Se requieren privilegios de administrador"
-        fi
-        exit 1
-    fi
-    # Después de autenticar con pkexec, validar con sudo
-    sudo -v 2>/dev/null
+    echo "Error: Se requieren privilegios de administrador"
+    exit 1
 fi
-
-echo "Autenticación exitosa. Iniciando NFS App..."
-echo ""
-
-# Mantener sudo activo durante toda la sesión de la app
-(while true; do sudo -n true; sleep 50; done 2>/dev/null) &
-SUDO_KEEPER_PID=$!
-trap "kill $SUDO_KEEPER_PID 2>/dev/null" EXIT
-
-# Ejecutar la aplicación
-java -jar build/libs/nfs-app-1.0.0.jar
 EOF
 
 chmod +x App_NFS_Suse.sh

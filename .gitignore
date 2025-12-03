@@ -33,3 +33,6 @@ bin/
 /.gradle
 /build
 /out
+/gradle/
+gradlew
+gradlew.bat
