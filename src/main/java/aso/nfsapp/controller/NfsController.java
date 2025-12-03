@@ -224,6 +224,23 @@ public class NfsController {
         if (index < 0) {
             return;
         }
+        
+        // Obtener el directorio seleccionado para mostrar en la confirmación
+        String dirPath = ui.getDirectoryListPanel().getDirectoryListModel().getElementAt(index);
+        
+        // Pedir confirmación
+        int confirm = JOptionPane.showConfirmDialog(ui,
+            "¿Está seguro de que desea eliminar el directorio?\n\n" +
+            "Directorio: " + dirPath + "\n\n" +
+            "Nota: El directorio en el sistema de archivos NO será eliminado, solo se eliminará de la configuración NFS.",
+            "Confirmar Eliminación",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE);
+        
+        if (confirm != JOptionPane.YES_OPTION) {
+            return; // Usuario canceló
+        }
+        
         directories.remove(index);
         ui.getDirectoryListPanel().getDirectoryListModel().remove(index);
         clearRulesTable();
@@ -327,13 +344,19 @@ public class NfsController {
             return;
         }
         
+        // Obtener la regla a eliminar para mostrar en la confirmación
+        HostRule ruleToDelete = entry.getHostRules().get(selectedRow);
+        
         int confirm = JOptionPane.showConfirmDialog(ui, 
-            "¿Eliminar esta regla?", "Confirmar", 
-            JOptionPane.YES_NO_OPTION);
+            "¿Está seguro de que desea eliminar esta regla?\n\n" +
+            "Host: " + ruleToDelete.getHostWildCard() + "\n" +
+            "Opciones: " + ruleToDelete.getOptions(),
+            "Confirmar Eliminación", 
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE);
         
         if (confirm == JOptionPane.YES_OPTION) {
-            HostRule rule = entry.getHostRules().get(selectedRow);
-            entry.removeHostRule(rule);
+            entry.removeHostRule(ruleToDelete);
             refreshRulesTable();
             
             // Marcar que hay cambios sin guardar
