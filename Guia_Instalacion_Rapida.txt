@@ -30,11 +30,15 @@ Instalación
 
 Ejecución de la aplicación
 -------------------------
-- Opción 1: Ejecute el script generado (puede ejecutarlo a través de consola o haciendo clic en el archivo mediante interfaz gráfica):
-    ./App_NFS_Suse.sh"
+La aplicación se ejecuta exclusivamente desde terminal.
 
-- Opción 2: Ejecuta el jar manualmente:
-    java -jar build/libs/nfs-app-1.0.0.jar
+Opción 1: Usar el script generado:
+    ./App_NFS_Suse.sh
+
+Opción 2: Ejecutar directamente el JAR:
+    sudo java -jar build/libs/nfs-app-1.0.0.jar
+
+Nota: Se solicita contraseña de administrador una sola vez al iniciar.
 
 Uso básico
 ----------
@@ -43,9 +47,8 @@ Uso básico
 
 Notas importantes
 -----------------
-- Se requiere pkexec para modificar /etc/exports. Si hay problemas, instala polkit:  
-    sudo zypper install polkit
-
+- Se requieren permisos de administrador (sudo).
+- La aplicación se ejecuta solo desde terminal.
 - Verifica que el usuario tenga permisos de sudo.
 
 Desarrollo y compilación

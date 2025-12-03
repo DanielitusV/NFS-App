@@ -106,6 +106,15 @@ public class NfsController {
             return;
         }
         
+        // Validar que la ruta sea válida
+        if (!isValidPath(dir)) {
+            JOptionPane.showMessageDialog(ui,
+                "La ruta ingresada no es válida. Debe ser una ruta absoluta en Linux (ej: /opt/datos)",
+                "Error", JOptionPane.ERROR_MESSAGE);
+            addDirectory(); // Reintentar
+            return;
+        }
+        
         // Asegurar que empiece con /
         if (!dir.startsWith("/")) {
             dir = "/" + dir;
@@ -602,5 +611,29 @@ public class NfsController {
             // Si no se puede leer, simplemente empezamos desde cero
             System.err.println("No se pudo cargar el archivo exports: " + e.getMessage());
         }
+    }
+
+    private boolean isValidPath(String path) {
+        if (path == null || path.isEmpty()) {
+            return false;
+        }
+        
+        // Debe empezar con /
+        if (!path.startsWith("/")) {
+            return false;
+        }
+        
+        // No puede tener caracteres inválidos o ser solo slashes
+        String trimmedSlashes = path.replaceAll("/+", "/");
+        if (trimmedSlashes.equals("/")) {
+            return false; // Solo slashes
+        }
+        
+        // No puede tener caracteres especiales problemáticos
+        if (path.contains("..") || path.contains("//")) {
+            return false;
+        }
+        
+        return true;
     }
 }
