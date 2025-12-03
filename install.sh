@@ -46,17 +46,30 @@ fi
 # Compilar aplicación
 echo ""
 echo "Compilando aplicacion..."
+
+# Dar permisos al gradlew
 if [ -f "gradlew" ]; then
     chmod +x gradlew
-    ./gradlew shadowJar
-    if [ $? -eq 0 ]; then
-        echo "Compilacion exitosa!"
+    
+    # Intentar con gradlew (descargará dependencias en primer uso)
+    ./gradlew clean shadowJar
+    GRADLE_RESULT=$?
+else
+    # Fallback a gradle del sistema si gradlew no existe
+    if command -v gradle &> /dev/null; then
+        echo "Usando gradle del sistema..."
+        gradle clean shadowJar
+        GRADLE_RESULT=$?
     else
-        echo "Error en la compilacion"
+        echo "Error: No se encontro gradlew ni gradle"
         exit 1
     fi
+fi
+
+if [ $GRADLE_RESULT -eq 0 ]; then
+    echo "Compilacion exitosa!"
 else
-    echo "Error: gradlew no encontrado"
+    echo "Error en la compilacion"
     exit 1
 fi
 
