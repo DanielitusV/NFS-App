@@ -90,10 +90,17 @@ public class MainWindow extends JFrame {
     }
     
     /**
-     * Habilita o deshabilita los botones de host según si hay un directorio seleccionado
+     * Habilita/deshabilita boton de agregar host cuando hay directorio seleccionado
      */
-    public void setHostButtonsEnabled(boolean enabled) {
-        hostRulesPanel.setHostButtonsEnabled(enabled);
+    public void setAddHostEnabled(boolean enabled) {
+        hostRulesPanel.setAddHostEnabled(enabled);
+    }
+    
+    /**
+     * Habilita/deshabilita botones de editar/eliminar host cuando hay fila seleccionada
+     */
+    public void setEditDeleteHostEnabled(boolean enabled) {
+        hostRulesPanel.setEditDeleteHostEnabled(enabled);
     }
 
 }

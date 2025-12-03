@@ -46,8 +46,9 @@ public class HostRulesTablePanel extends JPanel {
         actions.add(editHostButton);
         actions.add(deleteHostButton);
         
-        // Deshabilitar botones por defecto (se habilitarán cuando se seleccione un directorio)
-        setHostButtonsEnabled(false);
+        // Deshabilitar botones por defecto (se habilitarán cuando se seleccione un directorio/host)
+        setAddHostEnabled(false);
+        setEditDeleteHostEnabled(false);
         
         add(actions, BorderLayout.SOUTH);
     }
@@ -71,10 +72,15 @@ public class HostRulesTablePanel extends JPanel {
     }
     
     /**
-     * Habilita o deshabilita los botones de host según si hay un directorio seleccionado
+     * Habilita/deshabilita botones segun el estado
+     * - addHostButton: habilitado si hay directorio seleccionado
+     * - editHostButton y deleteHostButton: habilitados si hay fila seleccionada
      */
-    public void setHostButtonsEnabled(boolean enabled) {
+    public void setAddHostEnabled(boolean enabled) {
         addHostButton.setEnabled(enabled);
+    }
+    
+    public void setEditDeleteHostEnabled(boolean enabled) {
         editHostButton.setEnabled(enabled);
         deleteHostButton.setEnabled(enabled);
     }

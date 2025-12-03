@@ -43,12 +43,21 @@ public class NfsController {
         ui.getEditDirectoryButton().addActionListener(e -> editDirectory());
         ui.getDeleteDirectoryButton().addActionListener(e -> deleteDirectory());
 
-        /* Selección directorio -> Refrescan las reglas y habilitan botones de host */
+        /* Selección directorio -> Refresca las reglas y habilita boton de agregar host */
         ui.getDirectoryListPanel().getDirectoryList().addListSelectionListener(e -> {
            if (!e.getValueIsAdjusting()) {
                boolean hasSelection = ui.getDirectoryListPanel().getDirectoryList().getSelectedIndex() >= 0;
-               ui.setHostButtonsEnabled(hasSelection);
+               ui.setAddHostEnabled(hasSelection);  // Agregar Host siempre disponible si hay directorio
+               ui.setEditDeleteHostEnabled(false);  // Editar/Eliminar deshabilitados al cambiar directorio
                refreshRulesTable();
+           }
+        });
+        
+        /* Selección de fila en tabla de hosts -> Habilita botones editar/eliminar */
+        ui.getHostRulesPanel().getRulesTable().getSelectionModel().addListSelectionListener(e -> {
+           if (!e.getValueIsAdjusting()) {
+               boolean hasRowSelection = ui.getHostRulesPanel().getRulesTable().getSelectedRow() >= 0;
+               ui.setEditDeleteHostEnabled(hasRowSelection);
            }
         });
 
