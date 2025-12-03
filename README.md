@@ -41,14 +41,17 @@ sudo ./install.sh
 **Nota**: Se requieren permisos de administrador para que la aplicación pueda modificar permisos en los archivos.
 
 ### 3. Ejecutar la aplicación
-Se puede abrir la aplicación con el ejecutando directamente el archivo `App_NFS_Suse.sh`◘
-
-ó
-
-Con el siguiente comando:
+Desde terminal:
+```bash
+./App_NFS_Suse.sh
 ```
-java -jar build/libs/nfs-app-1.0.0.jar
+
+O directamente:
+```bash
+sudo java -jar build/libs/nfs-app-1.0.0.jar
 ```
+
+**Nota:** La aplicación se ejecuta desde terminal y requiere privilegios de administrador.
 
 ### Opcional - Compilar la aplicación por separado (no es necesario si se utilizó el ./install.sh)
 ```
@@ -64,11 +67,17 @@ El JAR se generará en: `build/libs/nfs-app-1.0.0.jar`
 
 ## Uso
 ### Iniciar la aplicación
+Desde terminal:
+```bash
+./App_NFS_Suse.sh
 ```
-sudo java -jar nfs-app-1.0.0.jar
+
+O directamente:
+```bash
+sudo java -jar build/libs/nfs-app-1.0.0.jar
 ```
-**Nota:** La aplicación requiere permisos de administrador para aplicar cambios en `/etc/exports`.
-Se solicitará la contraseña mediante `pkexec` cuando se guarden los cambios.
+
+**Nota:** La aplicación se ejecuta desde terminal y solicita contraseña de administrador una sola vez.
 
 ### Agregar un directorio para exportar
 1. Haz clic en "Add Directory"
