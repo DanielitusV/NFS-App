@@ -43,9 +43,13 @@ public class NfsController {
         ui.getEditDirectoryButton().addActionListener(e -> editDirectory());
         ui.getDeleteDirectoryButton().addActionListener(e -> deleteDirectory());
 
-        /* Selección directorio -> Refrescan las reglas */
+        /* Selección directorio -> Refrescan las reglas y habilitan botones de host */
         ui.getDirectoryListPanel().getDirectoryList().addListSelectionListener(e -> {
-           if (!e.getValueIsAdjusting()) refreshRulesTable();
+           if (!e.getValueIsAdjusting()) {
+               boolean hasSelection = ui.getDirectoryListPanel().getDirectoryList().getSelectedIndex() >= 0;
+               ui.setHostButtonsEnabled(hasSelection);
+               refreshRulesTable();
+           }
         });
 
         /* Botones reglas */
@@ -316,7 +320,7 @@ public class NfsController {
         }
     }
 
-    private void saveAndApplyChanges() {
+    public void saveAndApplyChanges() {
         try {
             List<String> lines = new ArrayList<>();
             for (ExportEntry e: directories) {

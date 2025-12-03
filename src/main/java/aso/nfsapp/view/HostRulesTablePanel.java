@@ -4,6 +4,7 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 
 /**
  * Panel que muestra las reglas de host (permisos) para el directorio seleccionado.
@@ -20,8 +21,8 @@ public class HostRulesTablePanel extends JPanel {
     private final JTable rulesTable = new JTable(rulesTableModel);
 
     private final JButton addHostButton = new JButton("Agregar Host");
-    private final JButton editHostButton = new JButton("Editar");
-    private final JButton deleteHostButton = new JButton("Eliminar");
+    private final JButton editHostButton = new JButton("Editar Host");
+    private final JButton deleteHostButton = new JButton("Eliminar Host");
 
     public HostRulesTablePanel() {
         setLayout(new BorderLayout(5, 5));
@@ -39,10 +40,15 @@ public class HostRulesTablePanel extends JPanel {
 
         add(new JScrollPane(rulesTable), BorderLayout.CENTER);
 
-        JPanel actions = new JPanel();
+        // Panel de botones centrado
+        JPanel actions = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
         actions.add(addHostButton);
         actions.add(editHostButton);
         actions.add(deleteHostButton);
+        
+        // Deshabilitar botones por defecto (se habilitarán cuando se seleccione un directorio)
+        setHostButtonsEnabled(false);
+        
         add(actions, BorderLayout.SOUTH);
     }
 
@@ -62,6 +68,15 @@ public class HostRulesTablePanel extends JPanel {
                 TitledBorder.TOP
             ));
         }
+    }
+    
+    /**
+     * Habilita o deshabilita los botones de host según si hay un directorio seleccionado
+     */
+    public void setHostButtonsEnabled(boolean enabled) {
+        addHostButton.setEnabled(enabled);
+        editHostButton.setEnabled(enabled);
+        deleteHostButton.setEnabled(enabled);
     }
 
     public DefaultTableModel getRulesTableModel() {

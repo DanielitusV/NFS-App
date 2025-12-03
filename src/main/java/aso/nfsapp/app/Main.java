@@ -25,19 +25,31 @@ public class Main {
                 @Override
                 public void windowClosing(WindowEvent e) {
                     if (mainWindow.hasUnsavedChanges()) {
-                        int confirm = JOptionPane.showConfirmDialog(
+                        // Crear diálogo con 3 opciones: Guardar y Salir, Salir sin Guardar, Cancelar
+                        String[] options = {"Guardar y Salir", "Salir sin Guardar", "Cancelar"};
+                        int choice = JOptionPane.showOptionDialog(
                             mainWindow,
-                            "Hay cambios sin guardar. ¿Desea salir sin guardar?",
+                            "Hay cambios sin guardar en /etc/exports\n\n" +
+                            "¿Qué desea hacer?",
                             "Cambios Pendientes",
-                            JOptionPane.YES_NO_OPTION,
-                            JOptionPane.WARNING_MESSAGE);
+                            JOptionPane.YES_NO_CANCEL_OPTION,
+                            JOptionPane.WARNING_MESSAGE,
+                            null,
+                            options,
+                            options[0]); // Default = "Guardar y Salir"
                         
-                        if (confirm != JOptionPane.YES_OPTION) {
-                            // No cerrar la ventana, mantener abierta
-                            return;
+                        if (choice == 0) {
+                            // "Guardar y Salir" - Guardar cambios y cerrar
+                            controller.saveAndApplyChanges();
+                            System.exit(0);
+                        } else if (choice == 1) {
+                            // "Salir sin Guardar" - Cerrar sin guardar
+                            System.exit(0);
                         }
+                        // choice == 2 o CLOSED_OPTION (X) = "Cancelar" - No hacer nada, mantener abierta
+                        return;
                     }
-                    // Si no hay cambios o el usuario confirma, cerrar
+                    // Si no hay cambios, cerrar directamente
                     System.exit(0);
                 }
             });
