@@ -21,12 +21,11 @@ public class HostRuleDialog extends JDialog {
     private JCheckBox anonuidCheckbox;
     private JCheckBox anongidCheckbox;
     
-    // Radio buttons para opciones mutuamente excluyentes
-    private ButtonGroup rwGroup, syncGroup, squashGroup, subtreeGroup, secureGroup;
-    private JRadioButton rwButton, roButton, syncButton, asyncButton;
-    private JRadioButton rootSquashButton, noRootSquashButton;
-    private JRadioButton subtreeCheckButton, noSubtreeCheckButton;
-    private JRadioButton secureButton, insecureButton;
+    // Checkboxes para opciones (pueden estar vacíos/deseleccionados)
+    private JCheckBox rwCheckbox, roCheckbox, syncCheckbox, asyncCheckbox;
+    private JCheckBox rootSquashCheckbox, noRootSquashCheckbox;
+    private JCheckBox subtreeCheckCheckbox, noSubtreeCheckCheckbox;
+    private JCheckBox secureCheckbox, insecureCheckbox;
     
     // Checkboxes para opciones independientes
     private JCheckBox allSquashCheckbox;
@@ -72,97 +71,107 @@ public class HostRuleDialog extends JDialog {
         JPanel optionsPanel = new JPanel();
         optionsPanel.setLayout(new BoxLayout(optionsPanel, BoxLayout.Y_AXIS));
 
-        // --- GRUPO 1: Read/Write vs Read-Only ---
+        // --- GRUPO 1: Read/Write vs Read-Only (Opcionales) ---
         JPanel rwPanel = new JPanel();
         rwPanel.setLayout(new BoxLayout(rwPanel, BoxLayout.X_AXIS));
-        rwPanel.setBorder(BorderFactory.createTitledBorder("Permisos de acceso"));
-        rwGroup = new ButtonGroup();
-        rwButton = new JRadioButton("rw (Lectura y escritura)");
-        roButton = new JRadioButton("ro (Solo lectura)");
-        rwButton.setToolTipText("Lectura y escritura (Read-Write) - Permite leer y escribir");
-        roButton.setToolTipText("Solo lectura (Read-Only) - Solo permite leer");
-        rwGroup.add(rwButton);
-        rwGroup.add(roButton);
-        rwButton.setSelected(true);
-        rwPanel.add(rwButton);
+        rwPanel.setBorder(BorderFactory.createTitledBorder("Permisos de acceso (opcional)"));
+        rwCheckbox = new JCheckBox("rw (Lectura y escritura)");
+        roCheckbox = new JCheckBox("ro (Solo lectura)");
+        rwCheckbox.setToolTipText("Lectura y escritura (Read-Write) - Permite leer y escribir");
+        roCheckbox.setToolTipText("Solo lectura (Read-Only) - Solo permite leer");
+        rwCheckbox.addActionListener(e -> {
+            if (rwCheckbox.isSelected()) roCheckbox.setSelected(false);
+        });
+        roCheckbox.addActionListener(e -> {
+            if (roCheckbox.isSelected()) rwCheckbox.setSelected(false);
+        });
+        rwPanel.add(rwCheckbox);
         rwPanel.add(Box.createHorizontalStrut(20));
-        rwPanel.add(roButton);
+        rwPanel.add(roCheckbox);
         rwPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         optionsPanel.add(rwPanel);
         optionsPanel.add(Box.createVerticalStrut(10));
         
-        // --- GRUPO 2: Sync vs Async ---
+        // --- GRUPO 2: Sync vs Async (Opcionales) ---
         JPanel syncPanel = new JPanel();
         syncPanel.setLayout(new BoxLayout(syncPanel, BoxLayout.X_AXIS));
-        syncPanel.setBorder(BorderFactory.createTitledBorder("Modo de escritura"));
-        syncGroup = new ButtonGroup();
-        syncButton = new JRadioButton("sync (Síncrono)");
-        asyncButton = new JRadioButton("async (Asíncrono)");
-        syncButton.setToolTipText("Escrituras síncronas - Más seguro pero más lento");
-        asyncButton.setToolTipText("Escrituras asíncronas - Más rápido pero menos seguro");
-        syncGroup.add(syncButton);
-        syncGroup.add(asyncButton);
-        syncButton.setSelected(true);
-        syncPanel.add(syncButton);
+        syncPanel.setBorder(BorderFactory.createTitledBorder("Modo de escritura (opcional)"));
+        syncCheckbox = new JCheckBox("sync (Síncrono)");
+        asyncCheckbox = new JCheckBox("async (Asíncrono)");
+        syncCheckbox.setToolTipText("Escrituras síncronas - Más seguro pero más lento");
+        asyncCheckbox.setToolTipText("Escrituras asíncronas - Más rápido pero menos seguro");
+        syncCheckbox.addActionListener(e -> {
+            if (syncCheckbox.isSelected()) asyncCheckbox.setSelected(false);
+        });
+        asyncCheckbox.addActionListener(e -> {
+            if (asyncCheckbox.isSelected()) syncCheckbox.setSelected(false);
+        });
+        syncPanel.add(syncCheckbox);
         syncPanel.add(Box.createHorizontalStrut(20));
-        syncPanel.add(asyncButton);
+        syncPanel.add(asyncCheckbox);
         syncPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         optionsPanel.add(syncPanel);
         optionsPanel.add(Box.createVerticalStrut(10));
         
-        // --- GRUPO 3: Root Squash ---
+        // --- GRUPO 3: Root Squash (Deshabilitado si all_squash está activo) ---
         JPanel squashPanel = new JPanel();
         squashPanel.setLayout(new BoxLayout(squashPanel, BoxLayout.X_AXIS));
-        squashPanel.setBorder(BorderFactory.createTitledBorder("Mapeo de usuario root"));
-        squashGroup = new ButtonGroup();
-        rootSquashButton = new JRadioButton("root_squash (Recomendado)");
-        noRootSquashButton = new JRadioButton("no_root_squash (Peligroso)");
-        rootSquashButton.setToolTipText("Mapea root a nobody - Recomendado (más seguro)");
-        noRootSquashButton.setToolTipText("Permite acceso root completo - [PELIGROSO]");
-        squashGroup.add(rootSquashButton);
-        squashGroup.add(noRootSquashButton);
-        rootSquashButton.setSelected(true);
-        squashPanel.add(rootSquashButton);
+        squashPanel.setBorder(BorderFactory.createTitledBorder("Mapeo de usuario root (opcional)"));
+        rootSquashCheckbox = new JCheckBox("root_squash (Recomendado)");
+        noRootSquashCheckbox = new JCheckBox("no_root_squash (Peligroso)");
+        rootSquashCheckbox.setToolTipText("Mapea root a nobody - Recomendado (más seguro)");
+        noRootSquashCheckbox.setToolTipText("Permite acceso root completo - [PELIGROSO]");
+        rootSquashCheckbox.addActionListener(e -> {
+            if (rootSquashCheckbox.isSelected()) noRootSquashCheckbox.setSelected(false);
+        });
+        noRootSquashCheckbox.addActionListener(e -> {
+            if (noRootSquashCheckbox.isSelected()) rootSquashCheckbox.setSelected(false);
+        });
+        squashPanel.add(rootSquashCheckbox);
         squashPanel.add(Box.createHorizontalStrut(10));
-        squashPanel.add(noRootSquashButton);
+        squashPanel.add(noRootSquashCheckbox);
         squashPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         optionsPanel.add(squashPanel);
         optionsPanel.add(Box.createVerticalStrut(10));
         
-        // --- GRUPO 4: Subtree Check ---
+        // --- GRUPO 4: Subtree Check (Opcionales) ---
         JPanel subtreePanel = new JPanel();
         subtreePanel.setLayout(new BoxLayout(subtreePanel, BoxLayout.X_AXIS));
-        subtreePanel.setBorder(BorderFactory.createTitledBorder("Verificación de subárbol"));
-        subtreeGroup = new ButtonGroup();
-        subtreeCheckButton = new JRadioButton("subtree_check (Más seguro)");
-        noSubtreeCheckButton = new JRadioButton("no_subtree_check (Más rápido)");
-        subtreeCheckButton.setToolTipText("Verifica subárbol completo - Más seguro");
-        noSubtreeCheckButton.setToolTipText("Desactiva verificación de subárbol - Más rápido");
-        subtreeGroup.add(subtreeCheckButton);
-        subtreeGroup.add(noSubtreeCheckButton);
-        subtreeCheckButton.setSelected(true);
-        subtreePanel.add(subtreeCheckButton);
+        subtreePanel.setBorder(BorderFactory.createTitledBorder("Verificación de subárbol (opcional)"));
+        subtreeCheckCheckbox = new JCheckBox("subtree_check (Más seguro)");
+        noSubtreeCheckCheckbox = new JCheckBox("no_subtree_check (Más rápido)");
+        subtreeCheckCheckbox.setToolTipText("Verifica subárbol completo - Más seguro");
+        noSubtreeCheckCheckbox.setToolTipText("Desactiva verificación de subárbol - Más rápido");
+        subtreeCheckCheckbox.addActionListener(e -> {
+            if (subtreeCheckCheckbox.isSelected()) noSubtreeCheckCheckbox.setSelected(false);
+        });
+        noSubtreeCheckCheckbox.addActionListener(e -> {
+            if (noSubtreeCheckCheckbox.isSelected()) subtreeCheckCheckbox.setSelected(false);
+        });
+        subtreePanel.add(subtreeCheckCheckbox);
         subtreePanel.add(Box.createHorizontalStrut(10));
-        subtreePanel.add(noSubtreeCheckButton);
+        subtreePanel.add(noSubtreeCheckCheckbox);
         subtreePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         optionsPanel.add(subtreePanel);
         optionsPanel.add(Box.createVerticalStrut(10));
         
-        // --- GRUPO 5: Secure vs Insecure ---
+        // --- GRUPO 5: Secure vs Insecure (Opcionales) ---
         JPanel securePanel = new JPanel();
         securePanel.setLayout(new BoxLayout(securePanel, BoxLayout.X_AXIS));
-        securePanel.setBorder(BorderFactory.createTitledBorder("Puerto de conexión"));
-        secureGroup = new ButtonGroup();
-        secureButton = new JRadioButton("secure (Recomendado)");
-        insecureButton = new JRadioButton("insecure (Menos seguro)");
-        secureButton.setToolTipText("Solo puertos < 1024 - Recomendado (más seguro)");
-        insecureButton.setToolTipText("Permite puertos > 1024 - [Menos seguro]");
-        secureGroup.add(secureButton);
-        secureGroup.add(insecureButton);
-        secureButton.setSelected(true);
-        securePanel.add(secureButton);
+        securePanel.setBorder(BorderFactory.createTitledBorder("Puerto de conexión (opcional)"));
+        secureCheckbox = new JCheckBox("secure (Recomendado)");
+        insecureCheckbox = new JCheckBox("insecure (Menos seguro)");
+        secureCheckbox.setToolTipText("Solo puertos < 1024 - Recomendado (más seguro)");
+        insecureCheckbox.setToolTipText("Permite puertos > 1024 - [Menos seguro]");
+        secureCheckbox.addActionListener(e -> {
+            if (secureCheckbox.isSelected()) insecureCheckbox.setSelected(false);
+        });
+        insecureCheckbox.addActionListener(e -> {
+            if (insecureCheckbox.isSelected()) secureCheckbox.setSelected(false);
+        });
+        securePanel.add(secureCheckbox);
         securePanel.add(Box.createHorizontalStrut(20));
-        securePanel.add(insecureButton);
+        securePanel.add(insecureCheckbox);
         securePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         optionsPanel.add(securePanel);
         optionsPanel.add(Box.createVerticalStrut(10));
@@ -172,35 +181,49 @@ public class HostRuleDialog extends JDialog {
         independentPanel.setLayout(new BoxLayout(independentPanel, BoxLayout.Y_AXIS));
         independentPanel.setBorder(BorderFactory.createTitledBorder("Opciones adicionales"));
         
-        allSquashCheckbox = new JCheckBox("all_squash (Máxima seguridad)");
-        allSquashCheckbox.setToolTipText("Mapea todos los usuarios a nobody - Máxima seguridad");
+        // all_squash checkbox (excluyente con root_squash/no_root_squash)
+        allSquashCheckbox = new JCheckBox("all_squash - Mapea TODOS los usuarios a anónimo (Máxima seguridad)");
+        allSquashCheckbox.setToolTipText("Mapea todos los usuarios (incluyendo root) a nobody - Desactiva root_squash/no_root_squash");
         allSquashCheckbox.setAlignmentX(Component.LEFT_ALIGNMENT);
+        allSquashCheckbox.addActionListener(e -> {
+            // Si all_squash está seleccionado, deshabilita root_squash/no_root_squash
+            boolean isAllSquashSelected = allSquashCheckbox.isSelected();
+            rootSquashCheckbox.setEnabled(!isAllSquashSelected);
+            noRootSquashCheckbox.setEnabled(!isAllSquashSelected);
+            // Si se habilita all_squash, deselecciona root_squash/no_root_squash
+            if (isAllSquashSelected) {
+                rootSquashCheckbox.setSelected(false);
+                noRootSquashCheckbox.setSelected(false);
+            }
+        });
         independentPanel.add(allSquashCheckbox);
-        independentPanel.add(Box.createVerticalStrut(5));
+        independentPanel.add(Box.createVerticalStrut(10));
         
-        // anonuid
+        // anonuid - puede estar vacío
         JPanel anonuidPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-        anonuidCheckbox = new JCheckBox("anonuid (UID para anónimos)");
-        anonuidCheckbox.setToolTipText("UID para usuarios anónimos (requiere valor numérico)");
+        anonuidCheckbox = new JCheckBox("anonuid");
+        anonuidCheckbox.setToolTipText("UID para usuarios anónimos (dejar vacío usa 65534 por defecto)");
         anonuidField.setEnabled(false);
         anonuidField.setColumns(8);
         anonuidCheckbox.addActionListener(e -> anonuidField.setEnabled(anonuidCheckbox.isSelected()));
         anonuidPanel.add(anonuidCheckbox);
         anonuidPanel.add(new JLabel("UID:"));
         anonuidPanel.add(anonuidField);
+        anonuidPanel.add(new JLabel("(opcional, 0-65535)"));
         independentPanel.add(anonuidPanel);
         independentPanel.add(Box.createVerticalStrut(5));
         
-        // anongid
+        // anongid - puede estar vacío
         JPanel anongidPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-        anongidCheckbox = new JCheckBox("anongid (GID para anónimos)");
-        anongidCheckbox.setToolTipText("GID para usuarios anónimos (requiere valor numérico)");
+        anongidCheckbox = new JCheckBox("anongid");
+        anongidCheckbox.setToolTipText("GID para usuarios anónimos (dejar vacío usa 65534 por defecto)");
         anongidField.setEnabled(false);
         anongidField.setColumns(8);
         anongidCheckbox.addActionListener(e -> anongidField.setEnabled(anongidCheckbox.isSelected()));
         anongidPanel.add(anongidCheckbox);
         anongidPanel.add(new JLabel("GID:"));
         anongidPanel.add(anongidField);
+        anongidPanel.add(new JLabel("(opcional, 0-65535)"));
         independentPanel.add(anongidPanel);
         
         independentPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -220,17 +243,22 @@ public class HostRuleDialog extends JDialog {
             String[] opts = currentOptions.split(",");
             for (String opt : opts) {
                 opt = opt.trim();
-                if (opt.equals("rw")) rwButton.setSelected(true);
-                else if (opt.equals("ro")) roButton.setSelected(true);
-                else if (opt.equals("sync")) syncButton.setSelected(true);
-                else if (opt.equals("async")) asyncButton.setSelected(true);
-                else if (opt.equals("root_squash")) rootSquashButton.setSelected(true);
-                else if (opt.equals("no_root_squash")) noRootSquashButton.setSelected(true);
-                else if (opt.equals("subtree_check")) subtreeCheckButton.setSelected(true);
-                else if (opt.equals("no_subtree_check")) noSubtreeCheckButton.setSelected(true);
-                else if (opt.equals("secure")) secureButton.setSelected(true);
-                else if (opt.equals("insecure")) insecureButton.setSelected(true);
-                else if (opt.equals("all_squash")) allSquashCheckbox.setSelected(true);
+                if (opt.equals("rw")) rwCheckbox.setSelected(true);
+                else if (opt.equals("ro")) roCheckbox.setSelected(true);
+                else if (opt.equals("sync")) syncCheckbox.setSelected(true);
+                else if (opt.equals("async")) asyncCheckbox.setSelected(true);
+                else if (opt.equals("root_squash")) rootSquashCheckbox.setSelected(true);
+                else if (opt.equals("no_root_squash")) noRootSquashCheckbox.setSelected(true);
+                else if (opt.equals("subtree_check")) subtreeCheckCheckbox.setSelected(true);
+                else if (opt.equals("no_subtree_check")) noSubtreeCheckCheckbox.setSelected(true);
+                else if (opt.equals("secure")) secureCheckbox.setSelected(true);
+                else if (opt.equals("insecure")) insecureCheckbox.setSelected(true);
+                else if (opt.equals("all_squash")) {
+                    allSquashCheckbox.setSelected(true);
+                    // Deshabilitar root_squash/no_root_squash cuando all_squash está activo
+                    rootSquashCheckbox.setEnabled(false);
+                    noRootSquashCheckbox.setEnabled(false);
+                }
                 else if (opt.startsWith("anonuid=")) {
                     String[] parts = opt.split("=");
                     if (parts.length == 2) {
@@ -310,53 +338,86 @@ public class HostRuleDialog extends JDialog {
     private void buildOptionsString() {
         List<String> selected = new ArrayList<>();
         
-        // Agregar las opciones de los radio buttons (siempre habrá una seleccionada en cada grupo)
-        if (rwButton.isSelected()) selected.add("rw");
-        else selected.add("ro");
+        // Agregar solo las opciones seleccionadas (pueden estar vacías)
+        if (rwCheckbox.isSelected()) selected.add("rw");
+        if (roCheckbox.isSelected()) selected.add("ro");
         
-        if (syncButton.isSelected()) selected.add("sync");
-        else selected.add("async");
+        if (syncCheckbox.isSelected()) selected.add("sync");
+        if (asyncCheckbox.isSelected()) selected.add("async");
         
-        if (rootSquashButton.isSelected()) selected.add("root_squash");
-        else selected.add("no_root_squash");
-        
-        if (subtreeCheckButton.isSelected()) selected.add("subtree_check");
-        else selected.add("no_subtree_check");
-        
-        if (secureButton.isSelected()) selected.add("secure");
-        else selected.add("insecure");
-        
-        // Agregar opciones independientes si están seleccionadas
+        // Root squash: solo si all_squash NO está seleccionado
         if (allSquashCheckbox.isSelected()) {
             selected.add("all_squash");
+        } else {
+            if (rootSquashCheckbox.isSelected()) selected.add("root_squash");
+            if (noRootSquashCheckbox.isSelected()) selected.add("no_root_squash");
         }
         
-        // anonuid
+        if (subtreeCheckCheckbox.isSelected()) selected.add("subtree_check");
+        if (noSubtreeCheckCheckbox.isSelected()) selected.add("no_subtree_check");
+        
+        if (secureCheckbox.isSelected()) selected.add("secure");
+        if (insecureCheckbox.isSelected()) selected.add("insecure");
+        
+        // anonuid - puede estar vacío (no valida si está vacío)
         if (anonuidCheckbox.isSelected()) {
             String uid = anonuidField.getText().trim();
-            if (!uid.isEmpty() && uid.matches("\\d+")) {
-                selected.add("anonuid=" + uid);
-            } else if (!uid.isEmpty()) {
-                JOptionPane.showMessageDialog(this,
-                    "anonuid debe ser un numero valido",
-                    "Error", JOptionPane.ERROR_MESSAGE);
-                confirmed = false;
-                return;
+            if (!uid.isEmpty()) {
+                if (uid.matches("\\d+")) {
+                    int uidNum = Integer.parseInt(uid);
+                    if (uidNum >= 0 && uidNum <= 65535) {
+                        selected.add("anonuid=" + uid);
+                    } else {
+                        JOptionPane.showMessageDialog(this,
+                            "anonuid debe estar entre 0 y 65535",
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                        confirmed = false;
+                        return;
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(this,
+                        "anonuid debe ser un numero valido",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+                    confirmed = false;
+                    return;
+                }
             }
+            // Si está vacío, no agrega nada (NFS usa 65534 por defecto)
         }
         
-        // anongid
+        // anongid - puede estar vacío (no valida si está vacío)
         if (anongidCheckbox.isSelected()) {
             String gid = anongidField.getText().trim();
-            if (!gid.isEmpty() && gid.matches("\\d+")) {
-                selected.add("anongid=" + gid);
-            } else if (!gid.isEmpty()) {
-                JOptionPane.showMessageDialog(this,
-                    "anongid debe ser un numero valido",
-                    "Error", JOptionPane.ERROR_MESSAGE);
-                confirmed = false;
-                return;
+            if (!gid.isEmpty()) {
+                if (gid.matches("\\d+")) {
+                    int gidNum = Integer.parseInt(gid);
+                    if (gidNum >= 0 && gidNum <= 65535) {
+                        selected.add("anongid=" + gid);
+                    } else {
+                        JOptionPane.showMessageDialog(this,
+                            "anongid debe estar entre 0 y 65535",
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                        confirmed = false;
+                        return;
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(this,
+                        "anongid debe ser un numero valido",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+                    confirmed = false;
+                    return;
+                }
             }
+            // Si está vacío, no agrega nada (NFS usa 65534 por defecto)
+        }
+        
+        // VALIDACIÓN: Debe haber AL MENOS UNA opción seleccionada
+        if (selected.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                "Debe seleccionar al menos una opción NFS",
+                "Error", JOptionPane.ERROR_MESSAGE);
+            confirmed = false;
+            return;
         }
         
         selectedOptions = String.join(",", selected);
