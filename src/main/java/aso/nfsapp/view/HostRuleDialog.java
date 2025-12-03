@@ -54,14 +54,13 @@ public class HostRuleDialog extends JDialog {
         this.selectedOptions = currentOptions != null ? currentOptions : "rw";
 
         setLayout(new BorderLayout(10, 10));
-        setLocationRelativeTo(parent);
 
         // Panel superior: Host Wildcard
         JPanel hostPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         hostPanel.add(new JLabel("Host Wild Card:"));
         hostField.setText(hostWildcard);
         hostPanel.add(hostField);
-        hostPanel.add(new JLabel("  (ej: *, 192.168.1.0/24, 192.168.1.10)"));
+        hostPanel.add(new JLabel("  (ej: *, 192.168.1.0, 192.168.1.10)"));
 
         // Panel central: Opciones con radio buttons para opciones excluyentes y checkboxes para independientes
         JPanel optionsContainer = new JPanel(new BorderLayout());
@@ -295,7 +294,7 @@ public class HostRuleDialog extends JDialog {
             // Validar IP/Host/Wildcard
             if (!isValidHostOrIP(hostWildcard)) {
                 JOptionPane.showMessageDialog(this,
-                    "Formato inválido. Aceptados: * (comodín), IPv4 (ej: 192.168.1.1), CIDR (ej: 192.168.1.0/24), rango (*)",
+                    "Formato inválido. Aceptados: * (comodín), IPv4 (ej: 192.168.1.1), CIDR (ej: 192.168.1.0), rango (*)",
                     "Error", JOptionPane.ERROR_MESSAGE);
                 hostField.requestFocus();
                 return;
@@ -333,6 +332,7 @@ public class HostRuleDialog extends JDialog {
         add(buttonPanel, BorderLayout.SOUTH);
         
         setSize(700, 600);
+        setLocationRelativeTo(parent);
     }
 
     private void buildOptionsString() {
@@ -425,20 +425,18 @@ public class HostRuleDialog extends JDialog {
     }
 
     private boolean isValidHostOrIP(String hostOrIP) {
-        // Comodín "*" es válido
+        // Wildcard "*" is valid
         if ("*".equals(hostOrIP)) {
             return true;
         }
         
-        // Verificar si es CIDR (ej: 192.168.1.0/24)
+        // Check CIDR notation (e.g., 192.168.1.0/24)
         if (hostOrIP.contains("/")) {
             String[] parts = hostOrIP.split("/");
             if (parts.length == 2) {
                 String ipPart = parts[0];
                 String maskPart = parts[1];
-                // Validar que sea una IP válida
                 if (isValidIPv4(ipPart)) {
-                    // Validar que la máscara sea numérica y esté entre 0-32
                     try {
                         int mask = Integer.parseInt(maskPart);
                         return mask >= 0 && mask <= 32;
@@ -450,15 +448,20 @@ public class HostRuleDialog extends JDialog {
             return false;
         }
         
-        // Verificar si es una IPv4 válida
+        // Check if it's a valid IPv4 address
         if (isValidIPv4(hostOrIP)) {
             return true;
         }
         
-        // Verificar si es un nombre de host válido (letras, números, guiones, puntos)
-        // Ejemplo: server.local, nfs-server, servidor01
-        if (hostOrIP.matches("^[a-zA-Z0-9][a-zA-Z0-9.-]*[a-zA-Z0-9]$|^[a-zA-Z0-9]$")) {
-            return true;
+        // Check if it's a valid hostname (RFC 1123)
+        // Only letters, numbers, hyphens (-) and dots (.)
+        // Cannot start/end with hyphen or dot
+        if (hostOrIP.matches("^[a-zA-Z0-9]([a-zA-Z0-9.-]*[a-zA-Z0-9])?$")) {
+            if (!hostOrIP.contains("--") && !hostOrIP.contains("..") && 
+                !hostOrIP.startsWith(".") && !hostOrIP.startsWith("-") &&
+                !hostOrIP.endsWith(".") && !hostOrIP.endsWith("-")) {
+                return true;
+            }
         }
         
         return false;

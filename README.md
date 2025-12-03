@@ -82,7 +82,7 @@ La aplicación se ejecuta desde terminal exclusivamente. Solicita contraseña de
 ### Agregar un directorio para exportar
 1. Haz clic en "Add Directory"
 2. Ingresa la ruta del directorio (ej: `/opt/docus`)
-3. Se creará automáticamente una regla por defecto con `192.168.1.0/24(rw)`
+3. Se creará automáticamente una regla por defecto con `192.168.1.0(rw)`
 
 ### Configurar reglas de host
 1. Selecciona un directorio de la lista

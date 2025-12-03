@@ -6,7 +6,7 @@ package aso.nfsapp.model;
  * Se serializa como: host(opciones)
  */
 public class HostRule {
-    private String hostWildCard;    // "*", "192.168.100.0/24"
+    private String hostWildCard;    // "*", "192.168.100.0"
     private String options;         // "rw", "ro,sync", ...
 
     public HostRule(String hostWildCard, String options) {

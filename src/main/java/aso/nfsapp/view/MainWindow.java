@@ -23,7 +23,7 @@ public class MainWindow extends JFrame {
 
     public MainWindow() {
         super ("NFS App");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setSize(900, 650);
         setLocationRelativeTo(null);
 

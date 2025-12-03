@@ -599,6 +599,10 @@ public class NfsController {
         // En Linux, intentar leer /etc/exports real con pkexec
         if (SystemPaths.isLinux()) {
             loadExistingExportsLinux();
+            // Auto-select first directory if available
+            if (!directories.isEmpty()) {
+                ui.getDirectoryListPanel().getDirectoryList().setSelectedIndex(0);
+            }
             return;
         }
         
@@ -611,6 +615,10 @@ public class NfsController {
         try {
             List<String> lines = Files.readAllLines(exportsPath);
             parseExportsLines(lines);
+            // Auto-select first directory if available
+            if (!directories.isEmpty()) {
+                ui.getDirectoryListPanel().getDirectoryList().setSelectedIndex(0);
+            }
         } catch (IOException e) {
             // Si no se puede leer, simplemente empezamos desde cero
             System.err.println("No se pudo cargar el archivo exports: " + e.getMessage());
